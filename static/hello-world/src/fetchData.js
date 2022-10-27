@@ -1,19 +1,18 @@
-import {requestJira} from "@forge/bridge"
-import employees from "./data";
+import { requestJira } from "@forge/bridge"
 
 const linkType = {
     id: '10006', name: 'Hierarchy link (WBSGantt)', inward: 'is contained in', outward: 'contains'
 }
 const projectKey = `TD`;
 const data = async () => {
-    const params = `project = "${projectKey}" AND ( issueLinkType = "${linkType.outward}" OR issueLinkType = null )`;
+    const params = `project = "${projectKey}" AND (filter != IsContainedIn)`;
     const response = await requestJira(`/rest/api/2/search?jql=${params}`);
     console.log('call api jira');
     return await response.json();
 };
-const issueData = data().then((result) => {
-    let data = [];
-    console.log(result)
+
+const issueData = data().then(result => {
+    let issues = [];
     result.issues.forEach((element) => {
         let item = {
             id: element.id,
@@ -21,11 +20,11 @@ const issueData = data().then((result) => {
             summary: element.fields.summary
         }
         findChild(item, element.fields.issuelinks);
-        data.push(item);
+        issues.push(item);
     });
-
-    return data;
+    return issues;
 });
+
 const findChild = (item, issueLinks) => {
     let children = []
     issueLinks.forEach(issueLink => {
@@ -35,9 +34,17 @@ const findChild = (item, issueLinks) => {
                 key: issueLink.outwardIssue.key,
                 summary: issueLink.outwardIssue.fields.summary
             }
+            getIssueLinks(issueLink.outwardIssue.key).then(result => {
+                findChild(child, result);
+            })
             children.push(child)
         }
     })
     if (children.length > 0) item.issues = children;
+}
+const getIssueLinks = async (issueKey) => {
+    const response = await requestJira(`/rest/api/3/issue/${issueKey}?fields=issuelinks`);
+    const data = await response.json()
+    return await data.fields.issuelinks
 }
 export default issueData;
