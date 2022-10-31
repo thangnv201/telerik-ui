@@ -14,39 +14,69 @@ const columns = [{
 }, {
     field: 'summary',
     title: 'Summary',
-    width: '33%'
+    width: '33%',
+    cell: MyCell,
 }];
-// const toolbar =
-//     <TreeListToolbar>
-//         <div onClick={closeEdit}>
-//             <button
-//                 title="Add new"
-//                 className="k-button k-button-md k-rounded-md k-button-solid k-button-solid-primary"
-//                 onClick={addRecord}
-//             >
-//                 Add new
-//             </button>
-//         </div>
-//     </TreeListToolbar>
+const MyCell = (props) => {
+    const { dataItem } = props;
+    const field = props.field || "";
+    const cellData = dataItem[field];
+    return (
+        <td>
+            <span
+                style={{
+                    color: "green"
+                }}
+            >
+                {String(cellData)}
+            </span>
+        </td>
+    );
+};
+const toolbar = () => {
+    <TreeListToolbar>
+        <div onClick={closeEdit}>
+            <button
+                title="Add new"
+                className="k-button k-button-md k-rounded-md k-button-solid k-button-solid-primary"
+                onClick={addRecord}
+            >
+                Add new
+            </button>
+        </div>
+    </TreeListToolbar>
+}
 function App() {
     let [data, setData] = useState([]);
     let [expanded, setExpanded] = useState([1, 3]);
-
+    let [editId, setEditId] = useState(null);
     if (data.length === 0) {
         issueData.then(value => {
             console.log(value)
             setData(value);
         })
     }
+    const closeEdit = (event) => {
+        if (event.target === event.currentTarget) {
+          setEditId(null);
+        }
+      };
+      const addRecord = () => {
+        const newRecord = {
+          id: new Date().getTime(),
+        };
+        setData([newRecord,...data])
+        setEditId(newRecord.id);
+      };
     const onRowDrop = event => {
         const dropItemIndex = [...event.draggedOver];
         const dropItem = getItemByIndex(data, dropItemIndex);
-        const oldParentIndex=[...event.dragged].slice(0,-1);
-        const oldParent = getItemByIndex(data,oldParentIndex);
+        const oldParentIndex = [...event.dragged].slice(0, -1);
+        const oldParent = getItemByIndex(data, oldParentIndex);
         console.log(dropItem);
         console.log(oldParent);
         setData(moveTreeItem(data, event.dragged, event.draggedOver, subItemsField));
-        updateIssueLink(dropItem,oldParent,event.draggedItem);
+        updateIssueLink(dropItem, oldParent, event.draggedItem);
     };
     const getItemByIndex = (data, draggedOver) => {
         if (draggedOver.length === 0) return null;
