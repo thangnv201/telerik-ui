@@ -45,6 +45,7 @@
     "@progress/kendo-theme-bootstrap": "^5.10.0",
     "@progress/kendo-theme-default": "^5.10.0",
     "@progress/kendo-theme-material": "^5.10.0",
+    "@progress/kendo-theme-nouvelle": "^5.10.0",
     "node-sass": "^7.0.3",
     "react": "^16.14.0",
     "react-dom": "^16.14.0",

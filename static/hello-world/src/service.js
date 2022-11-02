@@ -16,7 +16,7 @@ const deleteIssueLink = async (issueLinkID) => {
     console.log(await response.text());
 
 }
-const linkNewIssue = async (outwardKey, inwardKey) => {
+export const linkNewIssue = async (outwardKey, inwardKey) => {
     let body = {
         "outwardIssue": {
             "key": outwardKey
