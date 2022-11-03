@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { invoke } from "@forge/bridge";
 import "./styles.css";
 import {
@@ -15,8 +15,7 @@ import {
 import issueData from "./fetchData";
 import updateIssueLink from "./service";
 import MyCommandCell from "./my-command-cell";
-import createIssue from "./createIssue";
-import {linkNewIssue} from "./service"
+import { linkNewIssue, createIssue, updateIssue } from "./service";
 
 const subItemsField = "issues";
 const expandField = "expanded";
@@ -25,6 +24,7 @@ function App() {
   let [data, setData] = useState([]);
   let [expanded, setExpanded] = useState([1, 2, 32]);
   let [inEdit, setInEdit] = useState([]);
+  let test = useRef({});
   if (data.length === 0) {
     issueData.then((value) => {
       console.log(value);
@@ -114,16 +114,24 @@ function App() {
         );
         setInEdit(inEdit.filter((i) => i.id !== itemToSave.id));
         if (dataItem.parentKey !== undefined) {
-          linkNewIssue(result.key,dataItem.parentKey)
+          linkNewIssue(result.key, dataItem.parentKey);
         }
       });
     } else {
-      setData(
-        mapTree(data, subItemsField, (item) =>
-          item.id === itemToSave.id ? itemToSave : item
-        )
-      );
-      setInEdit(inEdit.filter((i) => i.id !== itemToSave.id));
+      let body = {
+        fields: {
+          summary: itemToSave.summary,
+        },
+      };
+      updateIssue(JSON.stringify(body), itemToSave.key).then((result) => {
+        console.log(result);
+        setData(
+          mapTree(data, subItemsField, (item) =>
+            item.id === itemToSave.id ? itemToSave : item
+          )
+        );
+        setInEdit(inEdit.filter((i) => i.id !== itemToSave.id));
+      });
     }
     console.log("save");
   };
@@ -160,6 +168,18 @@ function App() {
     setData([newRecord, ...data]);
     setInEdit([...inEdit, { ...newRecord }]);
   };
+  const saveAll = () => {
+    console.log("save All");
+    console.log(inEdit);
+    console.log(test);
+    inEdit.forEach((element) => {
+      console.log(test.current[element.key]);
+      test.current[element.key].click();
+    });
+  };
+  const log = () => {
+    console.log(inEdit);
+  };
   const createNewItem = () => {
     const timestamp = new Date().getTime();
     return {
@@ -173,7 +193,8 @@ function App() {
     save,
     cancel,
     addChild,
-    editField
+    editField,
+    test
   );
   const columns = [
     {
@@ -209,6 +230,7 @@ function App() {
       columns={columns}
       onRowDrop={onRowDrop}
       row={TreeListDraggableRow}
+      resizable={true}
       toolbar={
         <TreeListToolbar>
           <button
@@ -217,6 +239,20 @@ function App() {
             onClick={addRecord}
           >
             Add new
+          </button>
+          <button
+            title="Save All"
+            className="k-button k-button-md k-rounded-md k-button-solid k-button-solid-primary"
+            onClick={saveAll}
+          >
+            Save All
+          </button>
+          <button
+            title="LOG"
+            className="k-button k-button-md k-rounded-md k-button-solid k-button-solid-primary"
+            onClick={log}
+          >
+            LOG
           </button>
         </TreeListToolbar>
       }

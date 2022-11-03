@@ -57,4 +57,28 @@ const updateIssueLink = async (newParent, oldParent, child) => {
     linkNewIssue(child.key, newParent.key)
 
 }
+export const updateIssue = async(body,issueIdOrKey)=>{
+    const response = await requestJira(`/rest/api/3/issue/${issueIdOrKey}`, {
+        method: 'PUT',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        body: body
+    })
+    console.log(`Response: ${response.status} ${response.statusText}`);
+    return response.status
+}
+export const createIssue = async (body) => {
+    const response = await requestJira('/rest/api/3/issue', {
+        method: 'POST',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        body: body
+    })
+    console.log(`Response: ${response.status} ${response.statusText}`);
+    return await response.json()
+}
 export default updateIssueLink;

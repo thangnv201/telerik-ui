@@ -1,5 +1,5 @@
 import * as React from 'react';
-export default function MyCommandCell(enterEdit, remove, save, cancel, addChild, editField) {
+export default function MyCommandCell(enterEdit, remove, save, cancel, addChild, editField,test) {
   // eslint-disable-next-line react/display-name
   return class extends React.Component {
     render() {
@@ -7,7 +7,7 @@ export default function MyCommandCell(enterEdit, remove, save, cancel, addChild,
         dataItem
       } = this.props;
       return dataItem[editField] ? <td>
-                    <button className="k-button k-button-md k-rounded-md k-button-solid k-button-solid-base" onClick={() => save(dataItem)}>
+                    <button id={dataItem.key} ref={(ele)=> test.current[dataItem.key] = ele} className="k-button k-button-md k-rounded-md k-button-solid k-button-solid-base" onClick={() => save(dataItem)}>
                       { <span class="k-icon k-i-check"></span>}
                     </button>
                     <button className="k-button k-button-md k-rounded-md k-button-solid k-button-solid-base" onClick={() => cancel(dataItem)}><span class="k-icon k-i-cancel-outline"></span>
@@ -18,9 +18,6 @@ export default function MyCommandCell(enterEdit, remove, save, cancel, addChild,
                     </button>
                     <button className="k-button k-button-md k-rounded-md k-button-solid k-button-solid-base" onClick={() => enterEdit(dataItem)}>
                     <span class="k-icon k-i-edit"></span>
-                    </button>
-                    <button className="k-button k-button-md k-rounded-md k-button-solid k-button-solid-base" onClick={() => remove(dataItem)}>
-                    <span class="k-icon k-i-delete"></span>
                     </button>
                   </td>;
     }
