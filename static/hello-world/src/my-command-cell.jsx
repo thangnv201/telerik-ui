@@ -4,7 +4,7 @@ import {
     DropDownButtonItem,
 } from "@progress/kendo-react-buttons";
 import {issueType} from "./issueType";
-export default function MyCommandCell(enterEdit, remove, save, cancel, addChild, editField, test) {
+export default function MyCommandCell(enterEdit, remove, save, cancel, addChild, editField, bundleSave) {
     // eslint-disable-next-line react/display-name
     return class extends React.Component {
         render() {
@@ -12,7 +12,7 @@ export default function MyCommandCell(enterEdit, remove, save, cancel, addChild,
                 dataItem
             } = this.props;
             return dataItem[editField] ? <td>
-                <button id={dataItem.key} ref={(ele) => test.current[dataItem.key] = ele}
+                <button id={dataItem.key} ref={(ele) => bundleSave.current[dataItem.key] = ele}
                         className="k-button k-button-md k-rounded-md k-button-solid k-button-solid-base"
                         onClick={() => save(dataItem)}>
                     {<span class="k-icon k-i-check"></span>}

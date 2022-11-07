@@ -27,7 +27,7 @@ function App() {
     let [data, setData] = useState([]);
     let [expanded, setExpanded] = useState([1, 2, 32]);
     let [inEdit, setInEdit] = useState([]);
-    let test = useRef({});
+    let bundleSave = useRef({});
     if (data.length === 0) {
         issueData.then((value) => {
             console.log(value);
@@ -88,6 +88,8 @@ function App() {
         );
     };
     const enterEdit = (dataItem) => {
+        console.log('enter edit')
+        console.log(dataItem)
         setInEdit([...inEdit, extendDataItem(dataItem, subItemsField)]);
     };
     const save = (dataItem) => {
@@ -114,11 +116,11 @@ function App() {
                         item.id === itemToSave.id ? itemToSave : item
                     )
                 );
-                setInEdit(inEdit.filter((i) => i.id !== itemToSave.id));
                 if (dataItem.parentKey !== undefined) {
                     linkNewIssue(result.key, dataItem.parentKey);
                 }
             });
+            setInEdit(inEdit.filter((i) => i.id !== itemToSave.id));
         } else {
             let body = {
                 fields: {
@@ -132,8 +134,8 @@ function App() {
                         item.id === itemToSave.id ? itemToSave : item
                     )
                 );
-                setInEdit(inEdit.filter((i) => i.id !== itemToSave.id));
             });
+            setInEdit(inEdit.filter((i) => i.id !== itemToSave.id));
         }
         console.log("save");
     };
@@ -171,14 +173,12 @@ function App() {
         setData([newRecord, ...data]);
         setInEdit([...inEdit, {...newRecord}]);
     };
-    const saveAll = () => {
+    const saveAll = async () => {
         console.log("save All");
-        console.log(inEdit);
-        console.log(test);
-        inEdit.forEach((element) => {
-            console.log(test.current[element.key]);
-            test.current[element.key].click();
-        });
+        for (const element of inEdit) {
+            console.log(bundleSave.current[element.key]);
+            await bundleSave.current[element.key].click();
+        }
     };
     const log = () => {
         console.log(inEdit);
@@ -197,7 +197,7 @@ function App() {
         cancel,
         addChild,
         editField,
-        test
+        bundleSave
     );
     const columns = [
         {
