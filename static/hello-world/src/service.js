@@ -1,17 +1,21 @@
-import { requestJira } from "@forge/bridge"
+import {
+    requestJira
+} from "@forge/bridge"
 const linkType = {
-    id: '10006', name: 'Hierarchy link (WBSGantt)', inward: 'is contained in', outward: 'contains'
+    id: '10006',
+    name: 'Hierarchy link (WBSGantt)',
+    inward: 'is contained in',
+    outward: 'contains'
 }
 const deleteIssueLink = async (issueLinkID) => {
     console.log(issueLinkID);
-    const response = await requestJira(`/rest/api/3/issueLink/${issueLinkID}`,
-        {
-            method: 'DELETE',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            },
-        });
+    const response = await requestJira(`/rest/api/3/issueLink/${issueLinkID}`, {
+        method: 'DELETE',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+    });
     console.log(`Response: ${response.status} ${response.statusText}`);
     console.log(await response.text());
 
@@ -47,9 +51,9 @@ const updateIssueLink = async (newParent, oldParent, child) => {
         const oldIssueLinksChild = await data.fields.issuelinks
         const oldIssueLink = await oldIssueLinksChild.find(
             element =>
-            (element.inwardIssue !== undefined
-                && element.type.id === linkType.id
-                && element.inwardIssue.id === oldParent.id));
+            (element.inwardIssue !== undefined &&
+                element.type.id === linkType.id &&
+                element.inwardIssue.id === oldParent.id));
         //delete old issue link
         deleteIssueLink(oldIssueLink.id)
     }
@@ -57,7 +61,7 @@ const updateIssueLink = async (newParent, oldParent, child) => {
     linkNewIssue(child.key, newParent.key)
 
 }
-export const updateIssue = async(body,issueIdOrKey)=>{
+export const updateIssue = async (body, issueIdOrKey) => {
     const response = await requestJira(`/rest/api/3/issue/${issueIdOrKey}`, {
         method: 'PUT',
         headers: {
@@ -68,6 +72,36 @@ export const updateIssue = async(body,issueIdOrKey)=>{
     })
     console.log(`Response: ${response.status} ${response.statusText}`);
     return response.status
+}
+export const transitionIssue = async (issueIdOrKey, transitionID) => {
+    let body = {
+        transition: {
+            id: transitionID,
+        },
+    }
+    const response = await requestJira(`/rest/api/3/issue/${issueIdOrKey}/transitions`, {
+        method: 'POST',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(body)
+    })
+    console.log(`Response: ${response.status} ${response.statusText}`);
+}
+export const assigneeIssue = async (issueIdOrKey, accountID) => {
+    let body = {
+        "accountId": accountID
+    }
+    const response = await requestJira(`/rest/api/3/issue/${issueIdOrKey}/assignee`, {
+        method: 'PUT',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(body)
+    })
+    console.log(`Response: ${response.status} ${response.statusText}`);
 }
 export const createIssue = async (body) => {
     const response = await requestJira('/rest/api/3/issue', {

@@ -7,40 +7,50 @@ const projectKey = `TD`;
 const data = async () => {
     const params = `project = "${projectKey}" AND (filter != IsContainedIn)`;
     const response = await requestJira(`/rest/api/2/search?jql=${params}`);
-    console.log('call api jira');
     return await response.json();
 };
 
-const issueData = data().then(result => {
+const issueData = async () => {
+    const result = await data();
+    console.log(result);
     let issues = [];
-    result.issues.forEach((element) => {
+    await Promise.all(result.issues.map(async (element)=> {
         let item = {
             id: element.id,
             key: element.key,
-            summary: element.fields.summary
+            summary: element.fields.summary,
+            assignee:element.fields.assignee,
+            status: {text:element.fields.status.name},
+            storyPoint: element.fields.customfield_10033,
+            issueType: element.fields.issuetype.name
         }
-        findChild(item, element.fields.issuelinks);
-        issues.push(item);
-    });
-    return issues;
-});
 
-const findChild = (item, issueLinks) => {
-    let children = []
-    issueLinks.forEach(issueLink => {
-        if (issueLink.type.id === linkType.id && issueLink.outwardIssue !== undefined) {
-            let child = {
-                id: issueLink.outwardIssue.id,
-                key: issueLink.outwardIssue.key,
-                summary: issueLink.outwardIssue.fields.summary
-            }
-            getIssueLinks(issueLink.outwardIssue.key).then(result => {
-                findChild(child, result);
-            })
-            children.push(child)
+        let children = await findChildByJql(item);
+        item.issues = children;
+        issues.push(item)
+    }))
+    return issues;
+}
+
+export const findChildByJql = async (issue) => {
+    let jqlFindChildByID = `project = "${projectKey}" and issue in linkedIssues("${issue.key}", ${linkType.outward})`
+    let url = `/rest/api/2/search?jql=${jqlFindChildByID}`
+    const response = await requestJira(url);
+    const data = await response.json();
+    let listChildren = []
+    await data.issues.forEach(element => {
+        let item = {
+            id: element.id,
+            key: element.key,
+            summary: element.fields.summary,
+            assignee: element.fields.assignee,
+            status: {text:element.fields.status.name},
+            storyPoint: element.fields.customfield_10033,
+            issueType: element.fields.issuetype.name
         }
+        listChildren.push(item);
     })
-    if (children.length > 0) item.issues = children;
+    return listChildren;
 }
 const getIssueLinks = async (issueKey) => {
     const response = await requestJira(`/rest/api/3/issue/${issueKey}?fields=issuelinks`);
