@@ -3,12 +3,10 @@ import { useEffect, useState } from "react";
 import { requestJira } from "@forge/bridge";
 
 export const TransitionDropdown = (props) => {
-  console.log(props);
   let [transition, setTransition] = useState([]);
   useEffect(() => {
     (async () => {
       let transitions = await getTransition(props.dataItem.key);
-      console.log(transitions);
       let name = transitions.map((e) => {
         return { text: e.to.name, id: e.id };
       });

@@ -12,10 +12,15 @@ import {
   TreeListTextEditor,
   TreeListToolbar,
 } from "@progress/kendo-react-treelist";
-import issueData, { findChildByJql, getSingleIssue } from "./fetchData";
-import updateIssueLink, { assigneeIssue, transitionIssue } from "./service";
+import issueData, { findChildByJql } from "./fetchData";
+import updateIssueLink, {
+  assigneeIssue,
+  transitionIssue,
+  linkNewIssue,
+  createIssue,
+  updateIssue,
+} from "./service";
 import MyCommandCell from "./my-command-cell";
-import { linkNewIssue, createIssue, updateIssue } from "./service";
 import {
   DropDownButton,
   DropDownButtonItem,
@@ -24,9 +29,6 @@ import { issueType } from "./issueType";
 import AssigneeDropDown from "./DropDown/AssigneeDropDown";
 import TransitionDropDown from "./DropDown/TransitionDropDown";
 import { StoryPointDropDown } from "./DropDown/StoryPointDropDown";
-import LinkedIssueType from "./Filter/LinkedIssueTypeFilter";
-
-import { Button } from "@progress/kendo-react-buttons";
 import FilterData from "./Filter/FilterData";
 
 const subItemsField = "issues";
@@ -38,12 +40,13 @@ function App() {
   let [expanded, setExpanded] = useState([1, 2, 32]);
   let [inEdit, setInEdit] = useState([]);
   let bundleSave = useRef({});
-  // if (data.length === 0) {
-  //   issueData().then((value) => {
-  //     setData(value);
-  //   });
-  // }
-
+  let [projects, setProjects] = useState([]);
+  let [issueLinkType, setIssueLinkType] = useState("");
+  useEffect(() => {
+    invoke("getContext", { example: "my-invoke-variable" }).then((value) =>
+      console.log(value)
+    );
+  }, []);
   const onRowDrop = (event) => {
     const dropItemIndex = [...event.draggedOver];
     const dropItem = getItemByIndex(data, dropItemIndex);
@@ -64,12 +67,11 @@ function App() {
     }
   };
   const onExpandChange = (event) => {
-    console.log(event);
     if (event.value === false) {
       let issueParent = event.dataItem;
       Promise.all(
         issueParent.issues.map(async (child) => {
-          let childOfChild = await findChildByJql(child);
+          let childOfChild = await findChildByJql(projects,issueLinkType,child);
           await loadChild(data, child.key, childOfChild);
         })
       ).then(() => {
@@ -85,7 +87,6 @@ function App() {
   const loadChild = async (source, parentKey, childIssues) => {
     source.forEach((element) => {
       if (element.key === parentKey) {
-        console.log(element);
         element.issues = childIssues;
         return source;
       }
@@ -122,8 +123,6 @@ function App() {
   };
   const save = (dataItem) => {
     const { isNew, ...itemToSave } = dataItem;
-
-    console.log(dataItem);
     if (isNew === true) {
       let body = {
         fields: {
@@ -167,8 +166,6 @@ function App() {
           customfield_10033: itemToSave.storyPoint,
         },
       };
-
-      console.log(itemToSave);
       if (itemToSave["status.text"] !== undefined) {
         itemToSave["status"].text = itemToSave["status.text"].text;
         transitionIssue(itemToSave.key, itemToSave["status.text"].id);
@@ -234,7 +231,6 @@ function App() {
   const reload = () => {
     issueData().then((value) => {
       setData(value);
-      setIssueKey("");
     });
   };
   const createNewItem = () => {
@@ -294,24 +290,7 @@ function App() {
       cell: CommandCell,
     },
   ];
-  let [issueKey, setIssueKey] = useState("");
-  const getIssueKey = async () => {
-    console.log(issueKey);
-    if (issueKey.trim() === "") {
-      alert("Please enter the issue key");
-    }
-    let issue = await getSingleIssue(issueKey);
-    console.log(issue);
-    if (issue !== null) {
-      setData([issue]);
-    } else {
-      alert("Issue does not exist or you do not have permission to see it.");
-    }
-  };
   const onQuerry = (projects, linkType, issueKey) => {
-    console.log(projects);
-    console.log(linkType);
-    console.log(issueKey);
     if (projects.length === 0) {
       alert("Please select at leas one project");
       return;
@@ -320,8 +299,9 @@ function App() {
       alert("Please select link type of issue");
       return;
     }
+    setProjects(projects)
+    setIssueLinkType(linkType)
     issueData(projects, linkType, issueKey).then((value) => {
-      console.log(value);
       if (value.error) {
         alert(value.error);
       } else setData(value);

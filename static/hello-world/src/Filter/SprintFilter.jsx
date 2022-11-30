@@ -3,7 +3,6 @@ import { filterBy } from "@progress/kendo-data-query";
 import { useEffect, useState } from "react";
 import { requestJira } from "@forge/bridge";
 const SprintFilter = (props) => {
-  console.log(props);
   let [data, setData] = useState([]);
   let [staticData, setStaticData] = useState([]);
   useEffect(() => {

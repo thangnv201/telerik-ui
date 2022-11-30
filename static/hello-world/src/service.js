@@ -8,7 +8,6 @@ const linkType = {
     outward: 'contains'
 }
 const deleteIssueLink = async (issueLinkID) => {
-    console.log(issueLinkID);
     const response = await requestJira(`/rest/api/3/issueLink/${issueLinkID}`, {
         method: 'DELETE',
         headers: {

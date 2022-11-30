@@ -1,5 +1,5 @@
 modules:
-  jira:globalPage:
+  jira:projectPage:
     - key: terarik-ui-hello-world-page
       resource: main
       resolver:
