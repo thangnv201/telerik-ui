@@ -6,7 +6,6 @@ export const TransitionDropdown = (props) => {
   console.log(props);
   let [transition, setTransition] = useState([]);
   useEffect(() => {
-    console.log("useeffect");
     (async () => {
       let transitions = await getTransition(props.dataItem.key);
       console.log(transitions);
@@ -14,9 +13,7 @@ export const TransitionDropdown = (props) => {
         return { text: e.to.name, id: e.id };
       });
       setTransition(name);
-      // setValue(name.find(e => e.text ===props.dataItem.status.text))
     })();
-    console.log("done useeffect");
   }, []);
   const onChange = (event) => {
     if (props.onChange) {

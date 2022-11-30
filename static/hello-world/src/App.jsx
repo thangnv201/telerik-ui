@@ -12,7 +12,7 @@ import {
   TreeListTextEditor,
   TreeListToolbar,
 } from "@progress/kendo-react-treelist";
-import issueData, { findChildByJql } from "./fetchData";
+import issueData, { findChildByJql, getSingleIssue } from "./fetchData";
 import updateIssueLink, { assigneeIssue, transitionIssue } from "./service";
 import MyCommandCell from "./my-command-cell";
 import { linkNewIssue, createIssue, updateIssue } from "./service";
@@ -24,6 +24,10 @@ import { issueType } from "./issueType";
 import AssigneeDropDown from "./DropDown/AssigneeDropDown";
 import TransitionDropDown from "./DropDown/TransitionDropDown";
 import { StoryPointDropDown } from "./DropDown/StoryPointDropDown";
+import LinkedIssueType from "./Filter/LinkedIssueTypeFilter";
+
+import { Button } from "@progress/kendo-react-buttons";
+import FilterData from "./Filter/FilterData";
 
 const subItemsField = "issues";
 const expandField = "expanded";
@@ -34,11 +38,11 @@ function App() {
   let [expanded, setExpanded] = useState([1, 2, 32]);
   let [inEdit, setInEdit] = useState([]);
   let bundleSave = useRef({});
-  if (data.length === 0) {
-    issueData().then((value) => {
-      setData(value);
-    });
-  }
+  // if (data.length === 0) {
+  //   issueData().then((value) => {
+  //     setData(value);
+  //   });
+  // }
 
   const onRowDrop = (event) => {
     const dropItemIndex = [...event.draggedOver];
@@ -203,7 +207,6 @@ function App() {
   };
   const viewDetails = (dataItem) => {
     setData([dataItem]);
-    console.log(dataItem);
   };
   const onItemChange = (event) => {
     const field = event.field;
@@ -231,6 +234,7 @@ function App() {
   const reload = () => {
     issueData().then((value) => {
       setData(value);
+      setIssueKey("");
     });
   };
   const createNewItem = () => {
@@ -290,59 +294,94 @@ function App() {
       cell: CommandCell,
     },
   ];
-
+  let [issueKey, setIssueKey] = useState("");
+  const getIssueKey = async () => {
+    console.log(issueKey);
+    if (issueKey.trim() === "") {
+      alert("Please enter the issue key");
+    }
+    let issue = await getSingleIssue(issueKey);
+    console.log(issue);
+    if (issue !== null) {
+      setData([issue]);
+    } else {
+      alert("Issue does not exist or you do not have permission to see it.");
+    }
+  };
+  const onQuerry = (projects, linkType, issueKey) => {
+    console.log(projects);
+    console.log(linkType);
+    console.log(issueKey);
+    if (projects.length === 0) {
+      alert("Please select at leas one project");
+      return;
+    }
+    if (linkType === "") {
+      alert("Please select link type of issue");
+      return;
+    }
+    issueData(projects, linkType, issueKey).then((value) => {
+      console.log(value);
+      if (value.error) {
+        alert(value.error);
+      } else setData(value);
+    });
+  };
   return (
     <div>
-      <TreeList
-        style={{
-          maxHeight: "540px",
-          overflow: "auto",
-          width: "100%",
-        }}
-        expandField={expandField}
-        editField={editField}
-        subItemsField={subItemsField}
-        onExpandChange={onExpandChange}
-        onItemChange={onItemChange}
-        data={addExpandField(data)}
-        columns={columns}
-        onRowDrop={onRowDrop}
-        row={TreeListDraggableRow}
-        resizable={true}
-        toolbar={
-          <TreeListToolbar>
-            <DropDownButton
-              themeColor="info"
-              text={"Add new"}
-              onItemClick={(event) => addRecord(event.item.id)}
-            >
-              {issueType.map((value) => (
-                <DropDownButtonItem
-                  imageUrl={value.icon}
-                  text={value.type}
-                  id={value.id}
-                ></DropDownButtonItem>
-              ))}
-            </DropDownButton>
-            <button
-              title="Reload"
-              className="k-button k-button-md k-rounded-md k-button-solid k-button-solid-primary"
-              onClick={reload}
-            >
-              Reload
-            </button>
-            {inEdit.length > 0 && (
-              <button
-                title="Save All"
-                className="k-button k-button-md k-rounded-md k-button-solid k-button-solid-primary"
-                onClick={saveAll}
+      <FilterData onQuerry={onQuerry} />
+      {data.length !== 0 && (
+        <TreeList
+          style={{
+            maxHeight: "540px",
+            overflow: "auto",
+            width: "100%",
+          }}
+          expandField={expandField}
+          editField={editField}
+          subItemsField={subItemsField}
+          onExpandChange={onExpandChange}
+          onItemChange={onItemChange}
+          data={addExpandField(data)}
+          columns={columns}
+          onRowDrop={onRowDrop}
+          row={TreeListDraggableRow}
+          resizable={true}
+          toolbar={
+            <TreeListToolbar>
+              <DropDownButton
+                themeColor="info"
+                text={"Add new"}
+                onItemClick={(event) => addRecord(event.item.id)}
               >
-                Save All
+                {issueType.map((value) => (
+                  <DropDownButtonItem
+                    imageUrl={value.icon}
+                    text={value.type}
+                    id={value.id}
+                  ></DropDownButtonItem>
+                ))}
+              </DropDownButton>
+              <button
+                title="Reload"
+                className="k-button k-button-md k-rounded-md k-button-solid k-button-solid-primary"
+                onClick={reload}
+              >
+                Reload
               </button>
-            )}
-          </TreeListToolbar>
-        }
-      />
+              {inEdit.length > 0 && (
+                <button
+                  title="Save All"
+                  className="k-button k-button-md k-rounded-md k-button-solid k-button-solid-primary"
+                  onClick={saveAll}
+                >
+                  Save All
+                </button>
+              )}
+            </TreeListToolbar>
+          }
+        />
+      )}
     </div>
   );
 }
