@@ -1,9 +1,9 @@
 import { AutoComplete } from "@progress/kendo-react-dropdowns";
-import { filterBy } from "@progress/kendo-data-query";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { requestJira } from "@forge/bridge";
 
 export const AssigneeDropDown = (props) => {
+  console.log(props);
   const [users, setUsers] = useState([]);
   const [state, setState] = React.useState({
     data: users,
@@ -57,7 +57,7 @@ export const AssigneeDropDown = (props) => {
       value: value,
       ...stateData,
     });
-    if (props.onChange && valueSelected && !stateData.opened) {
+    if (props.onChange) {
       setState({
         value: value,
         ...stateData,
@@ -72,7 +72,12 @@ export const AssigneeDropDown = (props) => {
     }
   };
   return (
-    <td>
+    <td
+      aria-colindex={props.ariaColumnIndex}
+      aria-selected={props.isSelected}
+      data-grid-col-index={props.colIndex}
+      role="gridcell"
+    >
       <AutoComplete
         style={{
           width: "300px",

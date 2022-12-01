@@ -30,11 +30,18 @@ import AssigneeDropDown from "./DropDown/AssigneeDropDown";
 import TransitionDropDown from "./DropDown/TransitionDropDown";
 import { StoryPointDropDown } from "./DropDown/StoryPointDropDown";
 import FilterData from "./Filter/FilterData";
+import SummaryEditor from "./DropDown/SumarryEditor";
 
 const subItemsField = "issues";
 const expandField = "expanded";
 const editField = "inEdit";
-
+const loadingPanel = (
+  <div className="k-loading-mask">
+    <span className="k-loading-text">Loading</span>
+    <div className="k-loading-image"></div>
+    <div className="k-loading-color"></div>
+  </div>
+);
 function App() {
   let [data, setData] = useState([]);
   let [expanded, setExpanded] = useState([1, 2, 32]);
@@ -42,6 +49,7 @@ function App() {
   let bundleSave = useRef({});
   let [projects, setProjects] = useState([]);
   let [issueLinkType, setIssueLinkType] = useState("");
+  let [isLoading, setIsLoading] = useState(false);
   useEffect(() => {
     invoke("getContext", { example: "my-invoke-variable" }).then((value) =>
       console.log(value)
@@ -68,13 +76,19 @@ function App() {
   };
   const onExpandChange = (event) => {
     if (event.value === false) {
+      setIsLoading(true);
       let issueParent = event.dataItem;
       Promise.all(
         issueParent.issues.map(async (child) => {
-          let childOfChild = await findChildByJql(projects,issueLinkType,child);
+          let childOfChild = await findChildByJql(
+            projects,
+            issueLinkType,
+            child
+          );
           await loadChild(data, child.key, childOfChild);
         })
       ).then(() => {
+        setIsLoading(false);
         setData(data);
         setExpanded(
           event.value
@@ -82,6 +96,12 @@ function App() {
             : [...expanded, event.dataItem.id]
         );
       });
+    } else {
+      setExpanded(
+        event.value
+          ? expanded.filter((id) => id !== event.dataItem.id)
+          : [...expanded, event.dataItem.id]
+      );
     }
   };
   const loadChild = async (source, parentKey, childIssues) => {
@@ -123,12 +143,13 @@ function App() {
   };
   const save = (dataItem) => {
     const { isNew, ...itemToSave } = dataItem;
+    console.log(dataItem);
     if (isNew === true) {
       let body = {
         fields: {
           summary: itemToSave.summary,
           project: {
-            id: "10004",
+            key: projects[0].key,
           },
           issuetype: {
             id: itemToSave.issueType,
@@ -147,18 +168,18 @@ function App() {
           accountId: itemToSave["assignee.displayName"].id,
         };
       }
-      createIssue(JSON.stringify(body)).then((result) => {
-        itemToSave.key = result.key;
-        setData(
-          mapTree(data, subItemsField, (item) =>
-            item.id === itemToSave.id ? itemToSave : item
-          )
-        );
-        if (dataItem.parentKey !== undefined) {
-          linkNewIssue(result.key, dataItem.parentKey);
-        }
-      });
-      setInEdit(inEdit.filter((i) => i.id !== itemToSave.id));
+      // createIssue(JSON.stringify(body)).then((result) => {
+      //   itemToSave.key = result.key;
+      //   setData(
+      //     mapTree(data, subItemsField, (item) =>
+      //       item.id === itemToSave.id ? itemToSave : item
+      //     )
+      //   );
+      //   if (dataItem.parentKey !== undefined) {
+      //     linkNewIssue(result.key, dataItem.parentKey);
+      //   }
+      // });
+      // setInEdit(inEdit.filter((i) => i.id !== itemToSave.id));
     } else {
       let body = {
         fields: {
@@ -220,6 +241,7 @@ function App() {
   const addRecord = (issueTypeId) => {
     const newRecord = createNewItem();
     newRecord.issueType = issueTypeId;
+    console.log(newRecord);
     setData([newRecord, ...data]);
     setInEdit([...inEdit, { ...newRecord }]);
   };
@@ -229,9 +251,7 @@ function App() {
     }
   };
   const reload = () => {
-    issueData().then((value) => {
-      setData(value);
-    });
+    onQuerry(projects, issueLinkType, "");
   };
   const createNewItem = () => {
     const timestamp = new Date().getTime();
@@ -291,29 +311,37 @@ function App() {
     },
   ];
   const onQuerry = (projects, linkType, issueKey) => {
+    setIsLoading(true);
     if (projects.length === 0) {
       alert("Please select at leas one project");
+      setIsLoading(false);
       return;
     }
     if (linkType === "") {
       alert("Please select link type of issue");
+      setIsLoading(false);
       return;
     }
-    setProjects(projects)
-    setIssueLinkType(linkType)
+    setProjects(projects);
+    setIssueLinkType(linkType);
     issueData(projects, linkType, issueKey).then((value) => {
+      setIsLoading(false);
       if (value.error) {
         alert(value.error);
       } else setData(value);
     });
   };
+  const debug = () =>{
+    console.log(inEdit);
+  }
   return (
     <div>
+      {isLoading && loadingPanel}
       <FilterData onQuerry={onQuerry} />
       {data.length !== 0 && (
         <TreeList
           style={{
-            maxHeight: "540px",
+            maxHeight: "100%",
             overflow: "auto",
             width: "100%",
           }}
@@ -348,6 +376,13 @@ function App() {
                 onClick={reload}
               >
                 Reload
+              </button>
+              <button
+                title="DEBUG"
+                className="k-button k-button-md k-rounded-md k-button-solid k-button-solid-primary"
+                onClick={debug}
+              >
+                DEBUG
               </button>
               {inEdit.length > 0 && (
                 <button
