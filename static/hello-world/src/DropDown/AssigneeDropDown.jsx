@@ -7,24 +7,21 @@ export const AssigneeDropDown = (props) => {
   const [users, setUsers] = useState([]);
   const [state, setState] = React.useState({
     data: users,
-    value:
-      props.dataItem.aassignee !== undefined && props.dataItem.assignee !== null
-        ? props.dataItem.assignee.displayName
-        : null,
+    value: "",
     opened: false,
   });
 
   useEffect(() => {
     (async () => {
+      setState({
+        value: props.dataItem['assignee'],
+        ...state
+      })
       let result = await getListUser();
       let atlassianAccount = result.filter(
         (e) => e.accountType === "atlassian" && e.active === true
       );
-      setUsers(
-        atlassianAccount.map((e) => {
-          return { text: e.displayName, id: e.accountId };
-        })
-      );
+      setUsers(atlassianAccount.map((e) => e.displayName));
     })();
   }, []);
 
@@ -32,7 +29,7 @@ export const AssigneeDropDown = (props) => {
     const value = event.target.value;
     const filterData = (value) => {
       return users.filter((e) =>
-        e.text.toLowerCase().includes(value.toLowerCase())
+        e.toLowerCase().includes(value.toLowerCase())
       );
     };
     const stateData =
@@ -50,7 +47,7 @@ export const AssigneeDropDown = (props) => {
     const valueSelected =
       eventType === "click" ||
       (eventType === "keydown" && nativeEvent.keyCode === 13);
-    if (valueSelected && stateData.data.map((e) => e.text).includes(value)) {
+    if (valueSelected && stateData.data.includes(value)) {
       stateData.opened = false;
     }
     setState({
@@ -67,7 +64,7 @@ export const AssigneeDropDown = (props) => {
         level: props.level,
         field: props.field,
         syntheticEvent: event,
-        value: users.find((e) => e.text === value),
+        value: users.find((e) => e === value),
       });
     }
   };
@@ -83,10 +80,9 @@ export const AssigneeDropDown = (props) => {
           width: "300px",
         }}
         data={state.data}
-        value={state.value}
+        value={ props.isNew ? "" :props.dataItem['assignee']}
         onChange={onChange}
         opened={state.opened}
-        textField={"text"}
       />
     </td>
   );

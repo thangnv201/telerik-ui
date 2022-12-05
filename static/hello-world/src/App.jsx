@@ -198,13 +198,13 @@ function App() {
         };
         assigneeIssue(itemToSave.key, itemToSave["assignee.displayName"].id);
       }
-      updateIssue(JSON.stringify(body), itemToSave.key).then((result) => {
-        setData(
-          mapTree(data, subItemsField, (item) =>
-            item.id === itemToSave.id ? itemToSave : item
-          )
-        );
-      });
+      // updateIssue(JSON.stringify(body), itemToSave.key).then((result) => {
+      //   setData(
+      //     mapTree(data, subItemsField, (item) =>
+      //       item.id === itemToSave.id ? itemToSave : item
+      //     )
+      //   );
+      // });
       setInEdit(inEdit.filter((i) => i.id !== itemToSave.id));
     }
   };
@@ -286,7 +286,7 @@ function App() {
       editCell: TreeListTextEditor,
     },
     {
-      field: "assignee.displayName",
+      field: "assignee",
       title: "assignee",
       editCell: AssigneeDropDown,
     },

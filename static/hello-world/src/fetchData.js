@@ -22,7 +22,7 @@ const issueData = async (projects, linkType, issueKey) => {
             id: element.id,
             key: element.key,
             summary: element.fields.summary,
-            assignee: element.fields.assignee,
+            assignee: element.fields.assignee ? element.fields.assignee.displayName : null,
             status: {
                 text: element.fields.status.name
             },
@@ -49,7 +49,7 @@ export const findChildByJql = async (projects,linkType,issue) => {
             id: element.id,
             key: element.key,
             summary: element.fields.summary,
-            assignee: element.fields.assignee,
+            assignee: element.fields.assignee ? element.fields.assignee.displayName : null,
             status: {
                 text: element.fields.status.name
             },
