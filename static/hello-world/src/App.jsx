@@ -299,9 +299,13 @@ function App() {
           await updateIssue(JSON.stringify(body), issue.key);
         }
       })
-    ).then(() => {
-      reload();
+    ).then(async () => {
+      await delay(500);
+      await reload();
     });
+  };
+  const delay = (delayInms) => {
+    return new Promise((resolve) => setTimeout(resolve, delayInms));
   };
   const findDataItemByID = (id, dataSource) => {
     let result = undefined;
@@ -317,13 +321,13 @@ function App() {
       }
     }
   };
-  const reload = () => {
+  const reload = async () => {
     setIsLoading(true);
-    issueData(projects, issueLinkType, "").then((value) => {
-      setData(value);
-      setIsLoading(false);
-      setInEdit([]);
-    });
+    let value = await issueData(projects, issueLinkType, "");
+    setData(value);
+    console.log(value);
+    setIsLoading(false);
+    setInEdit([]);
   };
   const createNewItem = () => {
     const timestamp = new Date().getTime();
