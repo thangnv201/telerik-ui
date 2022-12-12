@@ -19,6 +19,7 @@ import updateIssueLink, {
   linkNewIssue,
   createIssue,
   updateIssue,
+  bulkCreateIssue,
 } from "./service";
 import MyCommandCell from "./my-command-cell";
 import {
@@ -30,10 +31,18 @@ import AssigneeDropDown from "./DropDown/AssigneeDropDown";
 import TransitionDropDown from "./DropDown/TransitionDropDown";
 import { StoryPointDropDown } from "./DropDown/StoryPointDropDown";
 import FilterData from "./Filter/FilterData";
+import { TestDropDown } from "./DropDown/TestDropdown";
 
 const subItemsField = "issues";
 const expandField = "expanded";
 const editField = "inEdit";
+const loadingPanel = (
+  <div className="k-loading-mask">
+    <span className="k-loading-text">Loading</span>
+    <div className="k-loading-image"></div>
+    <div className="k-loading-color"></div>
+  </div>
+);
 
 function App() {
   let [data, setData] = useState([]);
@@ -42,6 +51,7 @@ function App() {
   let bundleSave = useRef({});
   let [projects, setProjects] = useState([]);
   let [issueLinkType, setIssueLinkType] = useState("");
+  let [isLoading, setIsLoading] = useState(false);
   useEffect(() => {
     invoke("getContext", { example: "my-invoke-variable" }).then((value) =>
       console.log(value)
@@ -71,7 +81,11 @@ function App() {
       let issueParent = event.dataItem;
       Promise.all(
         issueParent.issues.map(async (child) => {
-          let childOfChild = await findChildByJql(projects,issueLinkType,child);
+          let childOfChild = await findChildByJql(
+            projects,
+            issueLinkType,
+            child
+          );
           await loadChild(data, child.key, childOfChild);
         })
       ).then(() => {
@@ -82,6 +96,12 @@ function App() {
             : [...expanded, event.dataItem.id]
         );
       });
+    } else {
+      setExpanded(
+        event.value
+          ? expanded.filter((id) => id !== event.dataItem.id)
+          : [...expanded, event.dataItem.id]
+      );
     }
   };
   const loadChild = async (source, parentKey, childIssues) => {
@@ -124,11 +144,12 @@ function App() {
   const save = (dataItem) => {
     const { isNew, ...itemToSave } = dataItem;
     if (isNew === true) {
+      console.log(projects);
       let body = {
         fields: {
           summary: itemToSave.summary,
           project: {
-            id: "10004",
+            key: projects[0].key,
           },
           issuetype: {
             id: itemToSave.issueType,
@@ -147,6 +168,7 @@ function App() {
           accountId: itemToSave["assignee.displayName"].id,
         };
       }
+      console.log(itemToSave);
       createIssue(JSON.stringify(body)).then((result) => {
         itemToSave.key = result.key;
         setData(
@@ -166,11 +188,11 @@ function App() {
           customfield_10033: itemToSave.storyPoint,
         },
       };
-      if (itemToSave["status.text"] !== undefined) {
+      if (itemToSave["status.text"]) {
         itemToSave["status"].text = itemToSave["status.text"].text;
         transitionIssue(itemToSave.key, itemToSave["status.text"].id);
       }
-      if (itemToSave["assignee.displayName"] !== undefined) {
+      if (itemToSave["assignee.displayName"]) {
         itemToSave.assignee = {
           displayName: itemToSave["assignee.displayName"].text,
           accountId: itemToSave["assignee.displayName"].id,
@@ -224,13 +246,83 @@ function App() {
     setInEdit([...inEdit, { ...newRecord }]);
   };
   const saveAll = async () => {
-    for (const element of inEdit) {
-      await bundleSave.current[element.key].click();
+    setIsLoading(true);
+    Promise.all(
+      inEdit.map(async (itemEdit) => {
+        let issue = findDataItemByID(itemEdit.id, data);
+
+        //Create new issue
+        if (issue.isNew) {
+          let body = {
+            fields: {
+              summary: issue.summary,
+              project: {
+                key: projects[0].key,
+              },
+              issuetype: {
+                id: issue.issueType,
+              },
+              assignee: {
+                id: issue["assignee.displayName"].id || null,
+              },
+            },
+          };
+          console.log(body);
+          createIssue(JSON.stringify(body)).then((result) => {
+            if (issue.parentKey) {
+              linkNewIssue(result.key, issue.parentKey);
+            }
+          });
+        } else {
+          console.log(issue);
+          let body = {
+            fields: {
+              summary: issue.summary,
+            },
+          };
+          body.fields = {
+            ...body.fields,
+            ...(issue.storyPoint && { customfield_10033: issue.storyPoint }),
+          };
+          console.log(body);
+          if (issue["status.text"]) {
+            issue["status"].text = issue["status.text"].text;
+            await transitionIssue(issue.key, issue["status.text"].id);
+          }
+          if (issue["assignee.displayName"]) {
+            issue.assignee = {
+              displayName: issue["assignee.displayName"].text,
+              accountId: issue["assignee.displayName"].id,
+            };
+            await assigneeIssue(issue.key, issue["assignee.displayName"].id);
+          }
+          await updateIssue(JSON.stringify(body), issue.key);
+        }
+      })
+    ).then(() => {
+      reload();
+    });
+  };
+  const findDataItemByID = (id, dataSource) => {
+    let result = undefined;
+    if (dataSource === undefined) return undefined;
+    else {
+      for (const dataItem of dataSource) {
+        if (dataItem.id === id) return dataItem;
+        else {
+          if (dataItem.issues?.length > 0)
+            result = findDataItemByID(id, dataItem.issues);
+          if (result) return result;
+        }
+      }
     }
   };
   const reload = () => {
-    issueData().then((value) => {
+    setIsLoading(true);
+    issueData(projects, issueLinkType, "").then((value) => {
       setData(value);
+      setIsLoading(false);
+      setInEdit([]);
     });
   };
   const createNewItem = () => {
@@ -268,7 +360,7 @@ function App() {
     {
       field: "assignee.displayName",
       title: "assignee",
-      editCell: AssigneeDropDown,
+      editCell: TestDropDown,
     },
     {
       field: "status.text",
@@ -291,6 +383,7 @@ function App() {
     },
   ];
   const onQuerry = (projects, linkType, issueKey) => {
+    setIsLoading(true);
     if (projects.length === 0) {
       alert("Please select at leas one project");
       return;
@@ -299,21 +392,25 @@ function App() {
       alert("Please select link type of issue");
       return;
     }
-    setProjects(projects)
-    setIssueLinkType(linkType)
+    setProjects(projects);
+    setIssueLinkType(linkType);
     issueData(projects, linkType, issueKey).then((value) => {
       if (value.error) {
         alert(value.error);
-      } else setData(value);
+      } else {
+        setData(value);
+        setIsLoading(false);
+      }
     });
   };
   return (
     <div>
+      {isLoading && loadingPanel}
       <FilterData onQuerry={onQuerry} />
       {data.length !== 0 && (
         <TreeList
           style={{
-            maxHeight: "540px",
+            maxHeight: "100%",
             overflow: "auto",
             width: "100%",
           }}

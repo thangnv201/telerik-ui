@@ -30,14 +30,14 @@ const issueData = async (projects, linkType, issueKey) => {
             issueType: element.fields.issuetype.name
         }
 
-        let children = await findChildByJql(projects,linkType,item);
+        let children = await findChildByJql(projects, linkType, item);
         item.issues = children;
         issues.push(item)
     }))
-    return issues;
+    return issues.sort((a, b) => b.id - a.id);
 }
 
-export const findChildByJql = async (projects,linkType,issue) => {
+export const findChildByJql = async (projects, linkType, issue) => {
     let listProject = projects.map(element => JSON.stringify(element.key))
     let jqlFindChildByID = `project in (${listProject}) and issue in linkedIssues("${issue.key}", ${linkType.outward})`
     let url = `/rest/api/2/search?jql=${jqlFindChildByID}`

@@ -114,4 +114,38 @@ export const createIssue = async (body) => {
     console.log(`Response: ${response.status} ${response.statusText}`);
     return await response.json()
 }
+export const bulkCreateIssue = async (bulkIssue, projectKey) => {
+    let body = {
+        issueUpdates: []
+    }
+    for (const issue of bulkIssue) {
+        if (issue.summary) {
+            body.issueUpdates.push({
+                update: {},
+                fields: {
+                    summary: issue.summary,
+                    issuetype: {
+                        id: issue.issueType
+                    },
+                    project: {
+                        key: projectKey
+                    },
+                    assignee: {
+                        id: issue["assignee.displayName"].id || null
+                    }
+                }
+            })
+        }
+    }
+    const response = await requestJira('/rest/api/3/issue/bulk`', {
+        method: 'POST',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(body)
+    })
+    console.log(`Response: ${response.status} ${response.statusText}`);
+    return await response.json()
+}
 export default updateIssueLink;
