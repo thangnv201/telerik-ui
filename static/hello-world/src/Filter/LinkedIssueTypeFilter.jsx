@@ -27,7 +27,7 @@ const findFilter = async (filterName) => {
   return result.values.find((element) => element.name === filterName);
 };
 const createFilter = async (filterName, inward) => {
-  var bodyData = {
+  let bodyData = {
     jql: `issueLinkType ="${inward}"`,
     name: filterName,
     sharePermissions: [{ type: "authenticated" }],

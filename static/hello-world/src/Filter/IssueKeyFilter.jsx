@@ -1,6 +1,4 @@
 import {
-  InputSeparator,
-  InputSuffix,
   TextBox,
 } from "@progress/kendo-react-inputs";
 const IssueKeyFilter = (props) => {

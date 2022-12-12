@@ -43,7 +43,6 @@ const loadingPanel = (
     <div className="k-loading-color"></div>
   </div>
 );
-
 function App() {
   let [data, setData] = useState([]);
   let [expanded, setExpanded] = useState([1, 2, 32]);
@@ -78,6 +77,7 @@ function App() {
   };
   const onExpandChange = (event) => {
     if (event.value === false) {
+      setIsLoading(true);
       let issueParent = event.dataItem;
       Promise.all(
         issueParent.issues.map(async (child) => {
@@ -89,6 +89,7 @@ function App() {
           await loadChild(data, child.key, childOfChild);
         })
       ).then(() => {
+        setIsLoading(false);
         setData(data);
         setExpanded(
           event.value
@@ -143,6 +144,7 @@ function App() {
   };
   const save = (dataItem) => {
     const { isNew, ...itemToSave } = dataItem;
+    console.log(dataItem);
     if (isNew === true) {
       console.log(projects);
       let body = {
@@ -199,13 +201,13 @@ function App() {
         };
         assigneeIssue(itemToSave.key, itemToSave["assignee.displayName"].id);
       }
-      updateIssue(JSON.stringify(body), itemToSave.key).then((result) => {
-        setData(
-          mapTree(data, subItemsField, (item) =>
-            item.id === itemToSave.id ? itemToSave : item
-          )
-        );
-      });
+      // updateIssue(JSON.stringify(body), itemToSave.key).then((result) => {
+      //   setData(
+      //     mapTree(data, subItemsField, (item) =>
+      //       item.id === itemToSave.id ? itemToSave : item
+      //     )
+      //   );
+      // });
       setInEdit(inEdit.filter((i) => i.id !== itemToSave.id));
     }
   };
@@ -242,6 +244,7 @@ function App() {
   const addRecord = (issueTypeId) => {
     const newRecord = createNewItem();
     newRecord.issueType = issueTypeId;
+    console.log(newRecord);
     setData([newRecord, ...data]);
     setInEdit([...inEdit, { ...newRecord }]);
   };
@@ -362,7 +365,7 @@ function App() {
       editCell: TreeListTextEditor,
     },
     {
-      field: "assignee.displayName",
+      field: "assignee",
       title: "assignee",
       editCell: TestDropDown,
     },
@@ -390,15 +393,18 @@ function App() {
     setIsLoading(true);
     if (projects.length === 0) {
       alert("Please select at leas one project");
+      setIsLoading(false);
       return;
     }
     if (linkType === "") {
       alert("Please select link type of issue");
+      setIsLoading(false);
       return;
     }
     setProjects(projects);
     setIssueLinkType(linkType);
     issueData(projects, linkType, issueKey).then((value) => {
+      setIsLoading(false);
       if (value.error) {
         alert(value.error);
       } else {
@@ -407,6 +413,9 @@ function App() {
       }
     });
   };
+  const debug = () =>{
+    console.log(inEdit);
+  }
   return (
     <div>
       {isLoading && loadingPanel}
@@ -449,6 +458,13 @@ function App() {
                 onClick={reload}
               >
                 Reload
+              </button>
+              <button
+                title="DEBUG"
+                className="k-button k-button-md k-rounded-md k-button-solid k-button-solid-primary"
+                onClick={debug}
+              >
+                DEBUG
               </button>
               {inEdit.length > 0 && (
                 <button
