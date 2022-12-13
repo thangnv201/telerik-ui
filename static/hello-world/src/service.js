@@ -1,6 +1,8 @@
 import {
     requestJira
 } from "@forge/bridge"
+import { invoke } from "@forge/bridge";
+
 const linkType = {
     id: '10006',
     name: 'Hierarchy link (WBSGantt)',
@@ -147,5 +149,16 @@ export const bulkCreateIssue = async (bulkIssue, projectKey) => {
     })
     console.log(`Response: ${response.status} ${response.statusText}`);
     return await response.json()
+}
+export const setStorage = (key, value) => {
+    invoke("setStorage", {
+        key: key,
+        value: value
+    })
+}
+export const getStorage = async (key) => {
+    return await invoke("getStorage", {
+        key: key
+    })
 }
 export default updateIssueLink;

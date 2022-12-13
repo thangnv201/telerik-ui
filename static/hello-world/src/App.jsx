@@ -20,6 +20,8 @@ import updateIssueLink, {
   createIssue,
   updateIssue,
   bulkCreateIssue,
+  setStorage,
+  getStorage,
 } from "./service";
 import MyCommandCell from "./my-command-cell";
 import {
@@ -329,6 +331,10 @@ function App() {
     setIsLoading(false);
     setInEdit([]);
   };
+  const debug = async () => {
+    let value = await getStorage("projects");
+    console.log(value);
+  };
   const createNewItem = () => {
     const timestamp = new Date().getTime();
     return {
@@ -398,6 +404,7 @@ function App() {
     }
     setProjects(projects);
     setIssueLinkType(linkType);
+    setStorage("projects", projects);
     issueData(projects, linkType, issueKey).then((value) => {
       if (value.error) {
         alert(value.error);
@@ -449,6 +456,13 @@ function App() {
                 onClick={reload}
               >
                 Reload
+              </button>
+              <button
+                title="Reload"
+                className="k-button k-button-md k-rounded-md k-button-solid k-button-solid-primary"
+                onClick={debug}
+              >
+                debug
               </button>
               {inEdit.length > 0 && (
                 <button

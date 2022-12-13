@@ -14,7 +14,11 @@ resources:
 app:
   id: ari:cloud:ecosystem::app/da7d96ec-743a-4c5c-94f6-a9723c954802
 permissions:
-  scopes: [read:jira-work,write:jira-work,read:jira-user]
+  scopes:
+    - storage:app
+    - read:jira-work
+    - write:jira-work
+    - read:jira-user
   content:
     styles:
       - unsafe-inline
