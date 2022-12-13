@@ -19,6 +19,7 @@ import updateIssueLink, {
   linkNewIssue,
   createIssue,
   updateIssue,
+  bulkCreateIssue,
 } from "./service";
 import MyCommandCell from "./my-command-cell";
 import {
@@ -30,7 +31,7 @@ import AssigneeDropDown from "./DropDown/AssigneeDropDown";
 import TransitionDropDown from "./DropDown/TransitionDropDown";
 import { StoryPointDropDown } from "./DropDown/StoryPointDropDown";
 import FilterData from "./Filter/FilterData";
-import SummaryEditor from "./DropDown/SumarryEditor";
+import { TestDropDown } from "./DropDown/TestDropdown";
 
 const subItemsField = "issues";
 const expandField = "expanded";
@@ -145,6 +146,7 @@ function App() {
     const { isNew, ...itemToSave } = dataItem;
     console.log(dataItem);
     if (isNew === true) {
+      console.log(projects);
       let body = {
         fields: {
           summary: itemToSave.summary,
@@ -168,18 +170,19 @@ function App() {
           accountId: itemToSave["assignee.displayName"].id,
         };
       }
-      // createIssue(JSON.stringify(body)).then((result) => {
-      //   itemToSave.key = result.key;
-      //   setData(
-      //     mapTree(data, subItemsField, (item) =>
-      //       item.id === itemToSave.id ? itemToSave : item
-      //     )
-      //   );
-      //   if (dataItem.parentKey !== undefined) {
-      //     linkNewIssue(result.key, dataItem.parentKey);
-      //   }
-      // });
-      // setInEdit(inEdit.filter((i) => i.id !== itemToSave.id));
+      console.log(itemToSave);
+      createIssue(JSON.stringify(body)).then((result) => {
+        itemToSave.key = result.key;
+        setData(
+          mapTree(data, subItemsField, (item) =>
+            item.id === itemToSave.id ? itemToSave : item
+          )
+        );
+        if (dataItem.parentKey !== undefined) {
+          linkNewIssue(result.key, dataItem.parentKey);
+        }
+      });
+      setInEdit(inEdit.filter((i) => i.id !== itemToSave.id));
     } else {
       let body = {
         fields: {
@@ -187,11 +190,11 @@ function App() {
           customfield_10033: itemToSave.storyPoint,
         },
       };
-      if (itemToSave["status.text"] !== undefined) {
+      if (itemToSave["status.text"]) {
         itemToSave["status"].text = itemToSave["status.text"].text;
         transitionIssue(itemToSave.key, itemToSave["status.text"].id);
       }
-      if (itemToSave["assignee.displayName"] !== undefined) {
+      if (itemToSave["assignee.displayName"]) {
         itemToSave.assignee = {
           displayName: itemToSave["assignee.displayName"].text,
           accountId: itemToSave["assignee.displayName"].id,
@@ -246,12 +249,88 @@ function App() {
     setInEdit([...inEdit, { ...newRecord }]);
   };
   const saveAll = async () => {
-    for (const element of inEdit) {
-      await bundleSave.current[element.key].click();
+    setIsLoading(true);
+    Promise.all(
+      inEdit.map(async (itemEdit) => {
+        let issue = findDataItemByID(itemEdit.id, data);
+
+        //Create new issue
+        if (issue.isNew) {
+          let body = {
+            fields: {
+              summary: issue.summary,
+              project: {
+                key: projects[0].key,
+              },
+              issuetype: {
+                id: issue.issueType,
+              },
+              assignee: {
+                id: issue["assignee.displayName"].id || null,
+              },
+            },
+          };
+          console.log(body);
+          createIssue(JSON.stringify(body)).then((result) => {
+            if (issue.parentKey) {
+              linkNewIssue(result.key, issue.parentKey);
+            }
+          });
+        } else {
+          console.log(issue);
+          let body = {
+            fields: {
+              summary: issue.summary,
+            },
+          };
+          body.fields = {
+            ...body.fields,
+            ...(issue.storyPoint && { customfield_10033: issue.storyPoint }),
+          };
+          console.log(body);
+          if (issue["status.text"]) {
+            issue["status"].text = issue["status.text"].text;
+            await transitionIssue(issue.key, issue["status.text"].id);
+          }
+          if (issue["assignee.displayName"]) {
+            issue.assignee = {
+              displayName: issue["assignee.displayName"].text,
+              accountId: issue["assignee.displayName"].id,
+            };
+            await assigneeIssue(issue.key, issue["assignee.displayName"].id);
+          }
+          await updateIssue(JSON.stringify(body), issue.key);
+        }
+      })
+    ).then(async () => {
+      await delay(500);
+      await reload();
+    });
+  };
+  const delay = (delayInms) => {
+    return new Promise((resolve) => setTimeout(resolve, delayInms));
+  };
+  const findDataItemByID = (id, dataSource) => {
+    let result = undefined;
+    if (dataSource === undefined) return undefined;
+    else {
+      for (const dataItem of dataSource) {
+        if (dataItem.id === id) return dataItem;
+        else {
+          if (dataItem.issues?.length > 0)
+            result = findDataItemByID(id, dataItem.issues);
+          if (result) return result;
+        }
+      }
     }
   };
-  const reload = () => {
-    onQuerry(projects, issueLinkType, "");
+  const reload = async () => {
+    setIsLoading(true);
+    let value = await issueData(projects, issueLinkType, "");
+    setData(value);
+    console.log(value);
+    setIsLoading(false);
+    setInEdit([]);
   };
   const createNewItem = () => {
     const timestamp = new Date().getTime();
@@ -288,7 +367,7 @@ function App() {
     {
       field: "assignee",
       title: "assignee",
-      editCell: AssigneeDropDown,
+      editCell: TestDropDown,
     },
     {
       field: "status.text",
@@ -328,7 +407,10 @@ function App() {
       setIsLoading(false);
       if (value.error) {
         alert(value.error);
-      } else setData(value);
+      } else {
+        setData(value);
+        setIsLoading(false);
+      }
     });
   };
   const debug = () =>{
