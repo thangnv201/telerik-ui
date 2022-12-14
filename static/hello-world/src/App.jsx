@@ -56,10 +56,12 @@ function App() {
   let [isLoading, setIsLoading] = useState(false);
   let [options, setOptions] = useState();
   useEffect(() => {
+    setIsLoading(true);
     invoke("getAccountID").then(async (accountId) => {
       let value = await getStorage(accountId);
       setOptions(value);
       console.log(value);
+      setIsLoading(false);
     });
   }, []);
   const onRowDrop = (event) => {
