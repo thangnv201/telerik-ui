@@ -6,7 +6,12 @@ const ProjectFilter = (props) => {
   let [data, setData] = useState([]);
   let [staticData, setStaticData] = useState([]);
   console.log(props.value);
+  let [value, setValue] = useState(props.value);
+
   useEffect(() => {
+    if (props.value) {
+      setValue(props.value);
+    }
     (async () => {
       let listProject = await getAllProject();
       let projects = listProject.map((element) => {
@@ -15,7 +20,7 @@ const ProjectFilter = (props) => {
       setData(projects);
       setStaticData(projects);
     })();
-  }, []);
+  }, [props]);
 
   let filterChange = (event) => {
     setData(filterBy(staticData, event.filter));
@@ -27,7 +32,7 @@ const ProjectFilter = (props) => {
       filterable={true}
       textField="projectName"
       dataItemKey="key"
-      value={props.value}
+      value={value}
       onFilterChange={filterChange}
       placeholder="Projects"
       style={{
@@ -35,6 +40,7 @@ const ProjectFilter = (props) => {
       }}
       onChange={(e) => {
         props.onChangeProject(e.target.value);
+        setValue(e.target.value);
       }}
     />
   );
