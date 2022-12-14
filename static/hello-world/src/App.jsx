@@ -60,7 +60,6 @@ function App() {
     invoke("getAccountID").then(async (accountId) => {
       let value = await getStorage(accountId);
       setOptions(value);
-      console.log(value);
       setIsLoading(false);
     });
   }, []);
@@ -151,7 +150,6 @@ function App() {
   const save = (dataItem) => {
     const { isNew, ...itemToSave } = dataItem;
     if (isNew === true) {
-      console.log(projects);
       let body = {
         fields: {
           summary: itemToSave.summary,
@@ -175,7 +173,6 @@ function App() {
           accountId: itemToSave["assignee.displayName"].id,
         };
       }
-      console.log(itemToSave);
       createIssue(JSON.stringify(body)).then((result) => {
         itemToSave.key = result.key;
         setData(
@@ -274,14 +271,12 @@ function App() {
               },
             },
           };
-          console.log(body);
           createIssue(JSON.stringify(body)).then((result) => {
             if (issue.parentKey) {
               linkNewIssue(result.key, issue.parentKey);
             }
           });
         } else {
-          console.log(issue);
           let body = {
             fields: {
               summary: issue.summary,
@@ -291,7 +286,6 @@ function App() {
             ...body.fields,
             ...(issue.storyPoint && { customfield_10033: issue.storyPoint }),
           };
-          console.log(body);
           if (issue["status.text"]) {
             issue["status"].text = issue["status.text"].text;
             await transitionIssue(issue.key, issue["status.text"].id);
@@ -332,14 +326,12 @@ function App() {
     setIsLoading(true);
     let value = await issueData(projects, issueLinkType, "");
     setData(value);
-    console.log(value);
     setIsLoading(false);
     setInEdit([]);
   };
   const debug = async () => {
     invoke("getAccountID").then(async (accountId) => {
       let value = await getStorage(accountId);
-      console.log(value);
     });
   };
   const createNewItem = () => {

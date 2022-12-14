@@ -53,7 +53,6 @@ const checkFilter = async (linktypes) => {
 };
 const LinkedIssueType = (props) => {
   let [data, setData] = useState([]);
-  console.log(props.value);
   useEffect(() => {
     (async () => {
       let linktypes = await getIssueLinkType();

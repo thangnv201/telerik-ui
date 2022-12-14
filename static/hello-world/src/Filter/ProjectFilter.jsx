@@ -5,7 +5,6 @@ import { requestJira } from "@forge/bridge";
 const ProjectFilter = (props) => {
   let [data, setData] = useState([]);
   let [staticData, setStaticData] = useState([]);
-  console.log(props.value);
   let [value, setValue] = useState(props.value);
 
   useEffect(() => {

@@ -6,6 +6,7 @@ const data = async (projects, linkType, issueKey) => {
     let listProject = projects.map(element => JSON.stringify(element.key))
     const params = issueKey === "" ? `project in (${listProject}) AND (filter != ${linkType.id})` : `project in (${listProject}) AND (filter != ${linkType.id}) AND issue =${issueKey}`;
     const response = await requestJira(`/rest/api/2/search?jql=${params}`);
+    console.log(params);
     return await response.json();
 };
 

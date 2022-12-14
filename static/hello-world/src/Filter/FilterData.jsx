@@ -7,14 +7,12 @@ const FilterData = (props) => {
   let [issueLinkType, setIssueLinkType] = useState("");
   let [issueKey, setIssueKey] = useState("");
   useEffect(() => {
-    console.log(props.options);
     if (props.options && projects.length === 0) {
       setProjects(props.options.projects);
       setIssueLinkType(props.options.issueLink);
     }
   }, [props]);
   const onChangeProject = (value) => {
-    console.log(value);
     setProjects(value);
   };
   const onChangeLinkIssueType = (value) => {
