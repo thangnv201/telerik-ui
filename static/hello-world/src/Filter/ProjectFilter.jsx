@@ -5,6 +5,7 @@ import { requestJira } from "@forge/bridge";
 const ProjectFilter = (props) => {
   let [data, setData] = useState([]);
   let [staticData, setStaticData] = useState([]);
+  console.log(props.value);
   useEffect(() => {
     (async () => {
       let listProject = await getAllProject();
@@ -26,12 +27,15 @@ const ProjectFilter = (props) => {
       filterable={true}
       textField="projectName"
       dataItemKey="key"
+      value={props.value}
       onFilterChange={filterChange}
       placeholder="Projects"
       style={{
         width: "300px",
       }}
-      onChange={e=>{props.onChangeProject(e.target.value)}}
+      onChange={(e) => {
+        props.onChangeProject(e.target.value);
+      }}
     />
   );
 };

@@ -1,11 +1,18 @@
 import LinkedIssueType from "./LinkedIssueTypeFilter";
 import ProjectFilter from "./ProjectFilter";
 import IssueKeyFilter from "./IssueKeyFilter";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 const FilterData = (props) => {
   let [projects, setProjects] = useState([]);
   let [issueLinkType, setIssueLinkType] = useState("");
   let [issueKey, setIssueKey] = useState("");
+  useEffect(() => {
+    console.log(props.options);
+    if (props.options) {
+      setProjects(props.options.projects);
+      setIssueLinkType(props.options.issueLink);
+    }
+  }, [props]);
   const onChangeProject = (value) => {
     setProjects(value);
   };
@@ -16,12 +23,15 @@ const FilterData = (props) => {
     setIssueKey(value);
   };
   const search = () => {
-    props.onQuerry(projects,issueLinkType,issueKey)
+    props.onQuerry(projects, issueLinkType, issueKey);
   };
   return (
     <>
-      <ProjectFilter onChangeProject={onChangeProject} />
-      <LinkedIssueType onChangeLinkIssueType={onChangeLinkIssueType} />
+      <ProjectFilter value={projects} onChangeProject={onChangeProject} />
+      <LinkedIssueType
+        value={issueLinkType}
+        onChangeLinkIssueType={onChangeLinkIssueType}
+      />
       <IssueKeyFilter onChangeIssueKey={onChangeIssueKey} />
       <button
         title="Search"

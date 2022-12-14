@@ -19,9 +19,9 @@ import updateIssueLink, {
   linkNewIssue,
   createIssue,
   updateIssue,
-  bulkCreateIssue,
   setStorage,
   getStorage,
+  saveOption,
 } from "./service";
 import MyCommandCell from "./my-command-cell";
 import {
@@ -54,10 +54,13 @@ function App() {
   let [projects, setProjects] = useState([]);
   let [issueLinkType, setIssueLinkType] = useState("");
   let [isLoading, setIsLoading] = useState(false);
+  let [options, setOptions] = useState();
   useEffect(() => {
-    invoke("getContext", { example: "my-invoke-variable" }).then((value) =>
-      console.log(value)
-    );
+    invoke("getAccountID").then(async (accountId) => {
+      let value = await getStorage(accountId);
+      setOptions(value);
+      console.log(value);
+    });
   }, []);
   const onRowDrop = (event) => {
     const dropItemIndex = [...event.draggedOver];
@@ -332,8 +335,10 @@ function App() {
     setInEdit([]);
   };
   const debug = async () => {
-    let value = await getStorage("projects");
-    console.log(value);
+    invoke("getAccountID").then(async (accountId) => {
+      let value = await getStorage(accountId);
+      console.log(value);
+    });
   };
   const createNewItem = () => {
     const timestamp = new Date().getTime();
@@ -404,7 +409,7 @@ function App() {
     }
     setProjects(projects);
     setIssueLinkType(linkType);
-    setStorage("projects", projects);
+    saveOption(projects, linkType);
     issueData(projects, linkType, issueKey).then((value) => {
       if (value.error) {
         alert(value.error);
@@ -417,7 +422,7 @@ function App() {
   return (
     <div>
       {isLoading && loadingPanel}
-      <FilterData onQuerry={onQuerry} />
+      <FilterData options={options} onQuerry={onQuerry} />
       {data.length !== 0 && (
         <TreeList
           style={{

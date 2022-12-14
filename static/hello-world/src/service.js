@@ -1,7 +1,7 @@
 import {
-    requestJira
+  requestJira,
+  invoke
 } from "@forge/bridge"
-import { invoke } from "@forge/bridge";
 
 const linkType = {
     id: '10006',
@@ -159,6 +159,14 @@ export const setStorage = (key, value) => {
 export const getStorage = async (key) => {
     return await invoke("getStorage", {
         key: key
+    })
+}
+export const saveOption = (projects, issueLink) => {
+    invoke('getAccountID').then(accountId => {
+        setStorage(accountId, {
+            projects: projects,
+            issueLink: issueLink
+        })
     })
 }
 export default updateIssueLink;

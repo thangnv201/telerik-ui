@@ -27,7 +27,7 @@ const findFilter = async (filterName) => {
   return result.values.find((element) => element.name === filterName);
 };
 const createFilter = async (filterName, inward) => {
-  var bodyData = {
+  let bodyData = {
     jql: `issueLinkType ="${inward}"`,
     name: filterName,
     sharePermissions: [{ type: "authenticated" }],
@@ -53,6 +53,7 @@ const checkFilter = async (linktypes) => {
 };
 const LinkedIssueType = (props) => {
   let [data, setData] = useState([]);
+  console.log(props.value);
   useEffect(() => {
     (async () => {
       let linktypes = await getIssueLinkType();
@@ -70,6 +71,7 @@ const LinkedIssueType = (props) => {
       style={{
         width: "300px",
       }}
+      value={props.value}
       data={data}
       textField="text"
       dataItemKey="id"
