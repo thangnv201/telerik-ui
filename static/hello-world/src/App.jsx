@@ -352,7 +352,7 @@ function App() {
     {
       field: "key",
       title: "Key",
-      expandable: true,
+      expandable: true,//alow expand
     },
     {
       field: "issueType",
@@ -389,6 +389,7 @@ function App() {
     },
   ];
   const onQuerry = (projects, linkType, issueKey, dateRange) => {
+    //valiate
     setIsLoading(true);
     if (projects.length === 0) {
       alert("Please select at leas one project");
@@ -406,6 +407,7 @@ function App() {
       issueLink: linkType,
       dateRange: dateRange,
     });
+    // get issue data
     issueData(projects, linkType, issueKey, dateRange).then((value) => {
       if (value.error) {
         alert(value.error);
@@ -430,15 +432,25 @@ function App() {
             overflow: "auto",
             width: "100%",
           }}
+          // expand field
           expandField={expandField}
+          // edit field
           editField={editField}
+          //child field
           subItemsField={subItemsField}
+          // lazy loading
           onExpandChange={onExpandChange}
+          // not use
           onItemChange={onItemChange}
+          //store data
           data={addExpandField(data)}
+          // define column
           columns={columns}
+          // set link issue when drag and drop
           onRowDrop={onRowDrop}
+          // allow drag and drop
           row={TreeListDraggableRow}
+          // resize
           resizable={true}
           toolbar={
             <TreeListToolbar>
