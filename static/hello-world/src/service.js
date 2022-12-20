@@ -1,6 +1,9 @@
 import {
-  requestJira,
-  invoke
+    storage
+} from "@forge/api";
+import {
+    requestJira,
+    invoke
 } from "@forge/bridge"
 
 const linkType = {
@@ -167,6 +170,21 @@ export const saveOption = (projects, issueLink) => {
             projects: projects,
             issueLink: issueLink
         })
+    })
+}
+export const saveFilter = async (data) => {
+    invoke('saveFilter',data);
+    // invoke('getAccountID').then(accountId => {
+    //     setStorage("filter_".concat(accountId).concat("_").concat(data.filterName), data)
+    // })
+}
+export const querryFilter = async () => {
+    let listFilter = await invoke('querryFilter');
+    return listFilter;
+}
+export const deleteStorage = async (key) => {
+    await invoke("deleteFilter", {
+        key: key
     })
 }
 export default updateIssueLink;

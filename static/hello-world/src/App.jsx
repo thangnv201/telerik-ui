@@ -34,6 +34,8 @@ import TransitionDropDown from "./DropDown/TransitionDropDown";
 import { StoryPointDropDown } from "./DropDown/StoryPointDropDown";
 import FilterData from "./Filter/FilterData";
 import { TestDropDown } from "./DropDown/TestDropdown";
+import SaveFilter from "./Filter/SaveFilter";
+import ManageFilter from "./Filter/ManageFilter";
 
 const subItemsField = "issues";
 const expandField = "expanded";
@@ -55,14 +57,8 @@ function App() {
   let [issueLinkType, setIssueLinkType] = useState("");
   let [isLoading, setIsLoading] = useState(false);
   let [options, setOptions] = useState();
-  useEffect(() => {
-    setIsLoading(true);
-    invoke("getAccountID").then(async (accountId) => {
-      let value = await getStorage(accountId);
-      setOptions(value);
-      setIsLoading(false);
-    });
-  }, []);
+  let [newFilter, setNewFilter] = useState();
+  useEffect(() => {}, []);
   const onRowDrop = (event) => {
     const dropItemIndex = [...event.draggedOver];
     const dropItem = getItemByIndex(data, dropItemIndex);
@@ -403,7 +399,7 @@ function App() {
     }
     setProjects(projects);
     setIssueLinkType(linkType);
-    saveOption(projects, linkType);
+    setOptions({ projects: projects, issueLink: linkType });
     issueData(projects, linkType, issueKey).then((value) => {
       if (value.error) {
         alert(value.error);
@@ -413,9 +409,13 @@ function App() {
       }
     });
   };
+  const onSaveNewFilter = (newFilter) => {
+    setNewFilter(newFilter);
+  };
   return (
     <div>
       {isLoading && loadingPanel}
+      <ManageFilter newFilter={newFilter} onQuerry={onQuerry}></ManageFilter>
       <FilterData options={options} onQuerry={onQuerry} />
       {data.length !== 0 && (
         <TreeList
@@ -472,6 +472,11 @@ function App() {
                   Save All
                 </button>
               )}
+              <SaveFilter
+                onSaveNewFilter={onSaveNewFilter}
+                projects={projects}
+                issueLinkType={issueLinkType}
+              ></SaveFilter>
             </TreeListToolbar>
           }
         />

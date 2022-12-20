@@ -1,12 +1,8 @@
-import {
-  InputSeparator,
-  InputSuffix,
-  TextBox,
-} from "@progress/kendo-react-inputs";
+import { TextBox } from "@progress/kendo-react-inputs";
 const IssueKeyFilter = (props) => {
   return (
     <TextBox
-      onChange={e => props.onChangeIssueKey(e.target.value)}
+      onChange={(e) => props.onChangeIssueKey(e.target.value)}
       placeholder="Issue key (can be blank)"
       style={{
         width: 400,

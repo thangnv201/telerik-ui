@@ -40,7 +40,7 @@ const issueData = async (projects, linkType, issueKey) => {
 
 export const findChildByJql = async (projects, linkType, issue) => {
     let listProject = projects.map(element => JSON.stringify(element.key))
-    let jqlFindChildByID = `project in (${listProject}) and issue in linkedIssues("${issue.key}", ${linkType.outward})`
+    let jqlFindChildByID = `project in (${listProject}) and issue in linkedIssues("${issue.key}", "${linkType.outward}")`
     let url = `/rest/api/2/search?jql=${jqlFindChildByID}`
     const response = await requestJira(url);
     const data = await response.json();
