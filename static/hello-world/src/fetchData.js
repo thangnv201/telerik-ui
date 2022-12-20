@@ -2,16 +2,32 @@ import {
     requestJira
 } from "@forge/bridge"
 
-const data = async (projects, linkType, issueKey) => {
+const data = async (projects, linkType, issueKey, dateRange) => {
     let listProject = projects.map(element => JSON.stringify(element.key))
-    const params = issueKey === "" ? `project in (${listProject}) AND (filter != ${linkType.id})` : `project in (${listProject}) AND (filter != ${linkType.id}) AND issue =${issueKey}`;
+    let params = issueKey === "" ? `project in (${listProject}) AND (filter != ${linkType.id})` : `project in (${listProject}) AND (filter != ${linkType.id}) AND issue =${issueKey}`;
+    if (dateRange) {
+        params = params.concat(` AND created >=${formatDate(dateRange.start)} AND created <=${formatDate(dateRange.end)}`);
+    }
     const response = await requestJira(`/rest/api/2/search?jql=${params}`);
     console.log(params);
     return await response.json();
 };
 
-const issueData = async (projects, linkType, issueKey) => {
-    const result = await data(projects, linkType, issueKey);
+export const formatDate = (date) => {
+    let d = new Date(date),
+        month = '' + (d.getMonth() + 1),
+        day = '' + d.getDate(),
+        year = d.getFullYear();
+
+    if (month.length < 2)
+        month = '0' + month;
+    if (day.length < 2)
+        day = '0' + day;
+
+    return [year, month, day].join('-');
+}
+const issueData = async (projects, linkType, issueKey, dateRange) => {
+    const result = await data(projects, linkType, issueKey, dateRange);
     if (result.errorMessages) {
         return {
             error: result.errorMessages

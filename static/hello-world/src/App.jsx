@@ -58,6 +58,7 @@ function App() {
   let [isLoading, setIsLoading] = useState(false);
   let [options, setOptions] = useState();
   let [newFilter, setNewFilter] = useState();
+  let [dateRange, setDateRange] = useState();
   useEffect(() => {}, []);
   const onRowDrop = (event) => {
     const dropItemIndex = [...event.draggedOver];
@@ -67,7 +68,7 @@ function App() {
     setData(
       moveTreeItem(data, event.dragged, event.draggedOver, subItemsField)
     );
-    updateIssueLink(dropItem, oldParent, event.draggedItem);
+    updateIssueLink(dropItem, oldParent, event.draggedItem, issueLinkType);
   };
   const getItemByIndex = (data, draggedOver) => {
     if (draggedOver.length === 0) return null;
@@ -177,7 +178,7 @@ function App() {
           )
         );
         if (dataItem.parentKey !== undefined) {
-          linkNewIssue(result.key, dataItem.parentKey);
+          linkNewIssue(result.key, dataItem.parentKey, issueLinkType);
         }
       });
       setInEdit(inEdit.filter((i) => i.id !== itemToSave.id));
@@ -269,7 +270,7 @@ function App() {
           };
           createIssue(JSON.stringify(body)).then((result) => {
             if (issue.parentKey) {
-              linkNewIssue(result.key, issue.parentKey);
+              linkNewIssue(result.key, issue.parentKey, issueLinkType);
             }
           });
         } else {
@@ -320,7 +321,7 @@ function App() {
   };
   const reload = async () => {
     setIsLoading(true);
-    let value = await issueData(projects, issueLinkType, "");
+    let value = await issueData(projects, issueLinkType, "", dateRange);
     setData(value);
     setIsLoading(false);
     setInEdit([]);
@@ -387,7 +388,7 @@ function App() {
       cell: CommandCell,
     },
   ];
-  const onQuerry = (projects, linkType, issueKey) => {
+  const onQuerry = (projects, linkType, issueKey, dateRange) => {
     setIsLoading(true);
     if (projects.length === 0) {
       alert("Please select at leas one project");
@@ -399,8 +400,13 @@ function App() {
     }
     setProjects(projects);
     setIssueLinkType(linkType);
-    setOptions({ projects: projects, issueLink: linkType });
-    issueData(projects, linkType, issueKey).then((value) => {
+    setDateRange(dateRange);
+    setOptions({
+      projects: projects,
+      issueLink: linkType,
+      dateRange: dateRange,
+    });
+    issueData(projects, linkType, issueKey, dateRange).then((value) => {
       if (value.error) {
         alert(value.error);
       } else {
@@ -476,6 +482,7 @@ function App() {
                 onSaveNewFilter={onSaveNewFilter}
                 projects={projects}
                 issueLinkType={issueLinkType}
+                dateRange={dateRange}
               ></SaveFilter>
             </TreeListToolbar>
           }

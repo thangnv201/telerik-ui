@@ -1,17 +1,8 @@
 import {
-    storage
-} from "@forge/api";
-import {
     requestJira,
     invoke
 } from "@forge/bridge"
 
-const linkType = {
-    id: '10006',
-    name: 'Hierarchy link (WBSGantt)',
-    inward: 'is contained in',
-    outward: 'contains'
-}
 const deleteIssueLink = async (issueLinkID) => {
     const response = await requestJira(`/rest/api/3/issueLink/${issueLinkID}`, {
         method: 'DELETE',
@@ -24,7 +15,7 @@ const deleteIssueLink = async (issueLinkID) => {
     console.log(await response.text());
 
 }
-export const linkNewIssue = async (outwardKey, inwardKey) => {
+export const linkNewIssue = async (outwardKey, inwardKey,issueLinkType) => {
     let body = {
         "outwardIssue": {
             "key": outwardKey
@@ -33,7 +24,7 @@ export const linkNewIssue = async (outwardKey, inwardKey) => {
             "key": inwardKey
         },
         "type": {
-            "name": linkType.name
+            "name": issueLinkType.name
         }
     }
     const response = await requestJira(`/rest/api/3/issueLink`, {
@@ -48,7 +39,7 @@ export const linkNewIssue = async (outwardKey, inwardKey) => {
     console.log(await response.text());
 
 }
-const updateIssueLink = async (newParent, oldParent, child) => {
+const updateIssueLink = async (newParent, oldParent, child,issueLinkType) => {
     if (oldParent !== null) {
         const response = await requestJira(`/rest/api/3/issue/${child.key}?fields=issuelinks`);
         const data = await response.json()
@@ -56,13 +47,13 @@ const updateIssueLink = async (newParent, oldParent, child) => {
         const oldIssueLink = await oldIssueLinksChild.find(
             element =>
             (element.inwardIssue !== undefined &&
-                element.type.id === linkType.id &&
+                element.type.id === issueLinkType.id &&
                 element.inwardIssue.id === oldParent.id));
         //delete old issue link
         deleteIssueLink(oldIssueLink.id)
     }
     //add new link issue
-    linkNewIssue(child.key, newParent.key)
+    linkNewIssue(child.key, newParent.key,issueLinkType)
 
 }
 export const updateIssue = async (body, issueIdOrKey) => {

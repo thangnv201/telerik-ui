@@ -20,6 +20,7 @@ const SaveFilter = (props) => {
       filterName: filterName,
       projects: props.projects,
       issueLinkType: props.issueLinkType,
+      dateRange: props.dateRange
     };
     props.onSaveNewFilter(data)
     saveFilter(data);
