@@ -1,7 +1,4 @@
-import {
-    requestJira,
-    invoke
-} from "@forge/bridge"
+import {invoke, requestJira} from "@forge/bridge"
 
 const deleteIssueLink = async (issueLinkID) => {
     const response = await requestJira(`/rest/api/3/issueLink/${issueLinkID}`, {
@@ -140,6 +137,17 @@ export const bulkCreateIssue = async (bulkIssue, projectKey) => {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify(body)
+    })
+    console.log(`Response: ${response.status} ${response.statusText}`);
+    return await response.json()
+}
+export const gerProjectVersions = async (projectIdOrKey) => {
+    const response = await requestJira(`/rest/api/3/project/${projectIdOrKey}/versions`, {
+        method: 'GET',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        }
     })
     console.log(`Response: ${response.status} ${response.statusText}`);
     return await response.json()

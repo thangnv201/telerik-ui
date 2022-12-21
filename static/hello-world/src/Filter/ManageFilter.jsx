@@ -1,73 +1,95 @@
-import { useEffect, useState } from "react";
-import { formatDate } from "../fetchData";
-import { querryFilter, deleteStorage } from "../service";
+import {useEffect, useState} from "react";
+import {deleteStorage, querryFilter} from "../service";
+import {DropDownList} from "@progress/kendo-react-dropdowns";
+import {filterBy} from "@progress/kendo-data-query";
+import {Button} from "@progress/kendo-react-buttons";
+
 const ManageFilter = (props) => {
-  let [filters, setFilters] = useState([]);
-  useEffect(() => {
-    (async () => {
-      let data = await querryFilter();
-      console.log("ManageFilter useEffect");
-      setFilters(data);
-    })();
-  }, [props]);
-  const querry = (filter) => {
-    console.log(filter);
-    props.onQuerry(filter.value.projects, filter.value.issueLinkType, "",filter.value.dateRange);
-  };
-  const share = () => {};
-  return (
-    <div>
-      <table>
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Issue Link</th>
-            <th>Projects</th>
-            <th>Date Range</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filters.map((filter) => {
-            return (
-              <tr>
-                <td>{filter.value.filterName}</td>
-                <td>{filter.value.issueLinkType.text}</td>
-                <td>
-                  {filter.value.projects.map((e) => e.projectName).toString()}
-                </td>
-                <td>
-                  {filter.value.dateRange
-                    ? formatDate(filter.value.dateRange?.start) +
-                      " - " +
-                      formatDate(filter.value.dateRange?.end)
-                    : "N/A"}
-                </td>
-                <td>
-                  <button
-                    onClick={() => {
-                      querry(filter);
-                    }}
-                  >
-                    Querry
-                  </button>
-                  <button onClick={share}>Share</button>
-                  <button
-                    onClick={() => {
-                      deleteStorage(filter.key);
-                      setFilters(filters.filter((e) => e.key != filter.key));
-                    }}
-                  >
-                    Delete
-                  </button>
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-      <br></br>
-    </div>
-  );
+    let [filters, setFilters] = useState([]);
+    let [data, setData] = useState(filters.slice());
+    let [selectedValue, setSelectedValue] = useState(null);
+    useEffect(() => {
+        (async () => {
+            let data = await querryFilter();
+            console.log(data);
+            let flatData = data.map(e => {
+                return {
+                    key: e.key,
+                    filterName: e.value.filterName,
+                    dateRange: e.value.dateRange,
+                    issueLinkType: e.value.issueLinkType,
+                    projects: e.value.projects
+                }
+            })
+            setData(flatData)
+            setFilters(flatData);
+        })();
+    }, [props]);
+    const filterData = (filter) => {
+        const data = filters.slice();
+        return filterBy(data, filter);
+    };
+    const filterChange = (event) => {
+        setData(filterData(event.filter));
+    };
+    const onChange = (event) => {
+        setSelectedValue(event.value);
+    };
+    const query = () => {
+        console.log(selectedValue)
+        props.onQuery(selectedValue.projects, selectedValue.issueLinkType, "", selectedValue.dateRange);
+    }
+    return (
+        <div>
+            <h2>Manage Filter</h2>
+            <DropDownList
+                style={{
+                    width: "300px",
+                }}
+                data={data}
+                textField="filterName"
+                onChange={onChange}
+                filterable={true}
+                value={selectedValue}
+                onFilterChange={filterChange}
+            />
+            <Button
+                size={'medium'}
+                themeColor={'info'}
+                fillMode={'solid'}
+                rounded={'medium'}
+                disabled={selectedValue === null}
+                onClick={query}
+            >
+                Query
+            </Button>
+            <Button
+                size={'medium'}
+                themeColor={'warning'}
+                fillMode={'solid'}
+                rounded={'medium'}
+                disabled={selectedValue === null}
+                onClick={() => {
+                    deleteStorage(selectedValue.key);
+                    setFilters(filters.filter((e) => e.key !== selectedValue.key));
+                    setData(filters.filter((e) => e.key !== selectedValue.key));
+                    setSelectedValue(null)
+                }}
+            >
+                Delete
+            </Button>
+            <Button
+                size={'medium'}
+                themeColor={'success'}
+                fillMode={'solid'}
+                rounded={'medium'}
+                disabled={selectedValue === null}
+                onClick={query}
+            >
+                Share
+            </Button>
+            <br></br>
+        </div>
+    );
 };
 export default ManageFilter;

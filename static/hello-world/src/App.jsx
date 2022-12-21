@@ -1,39 +1,33 @@
-import React, { useEffect, useRef, useState } from "react";
-import { invoke } from "@forge/bridge";
+import React, {useEffect, useRef, useState} from "react";
+import {invoke} from "@forge/bridge";
 import "./styles.css";
 import {
+  extendDataItem,
+  mapTree,
+  modifySubItems,
+  moveTreeItem,
+  removeItems,
   TreeList,
   TreeListDraggableRow,
-  mapTree,
-  moveTreeItem,
-  extendDataItem,
-  modifySubItems,
-  removeItems,
   TreeListTextEditor,
   TreeListToolbar,
 } from "@progress/kendo-react-treelist";
-import issueData, { findChildByJql } from "./fetchData";
+import issueData, {findChildByJql} from "./fetchData";
 import updateIssueLink, {
   assigneeIssue,
-  transitionIssue,
-  linkNewIssue,
   createIssue,
-  updateIssue,
-  setStorage,
   getStorage,
-  saveOption,
+  linkNewIssue,
+  transitionIssue,
+  updateIssue,
 } from "./service";
 import MyCommandCell from "./my-command-cell";
-import {
-  DropDownButton,
-  DropDownButtonItem,
-} from "@progress/kendo-react-buttons";
-import { issueType } from "./issueType";
-import AssigneeDropDown from "./DropDown/AssigneeDropDown";
+import {DropDownButton, DropDownButtonItem,} from "@progress/kendo-react-buttons";
+import {issueType} from "./issueType";
 import TransitionDropDown from "./DropDown/TransitionDropDown";
-import { StoryPointDropDown } from "./DropDown/StoryPointDropDown";
+import {StoryPointDropDown} from "./DropDown/StoryPointDropDown";
 import FilterData from "./Filter/FilterData";
-import { TestDropDown } from "./DropDown/TestDropdown";
+import {TestDropDown} from "./DropDown/TestDropdown";
 import SaveFilter from "./Filter/SaveFilter";
 import ManageFilter from "./Filter/ManageFilter";
 
@@ -378,17 +372,17 @@ function App() {
       field: "storyPoint",
       title: "storyPoint",
       editCell: (props) =>
-        props.dataItem.issueType === "Story" ? (
-          StoryPointDropDown(props)
-        ) : (
-          <td></td>
-        ),
+          props.dataItem.issueType === "Story" ? (
+              StoryPointDropDown(props)
+          ) : (
+              <td></td>
+          ),
     },
     {
       cell: CommandCell,
     },
   ];
-  const onQuerry = (projects, linkType, issueKey, dateRange) => {
+  const onQuery = (projects, linkType, issueKey, dateRange) => {
     //valiate
     setIsLoading(true);
     if (projects.length === 0) {
@@ -421,20 +415,20 @@ function App() {
     setNewFilter(newFilter);
   };
   return (
-    <div>
-      {isLoading && loadingPanel}
-      <ManageFilter newFilter={newFilter} onQuerry={onQuerry}></ManageFilter>
-      <FilterData options={options} onQuerry={onQuerry} />
-      {data.length !== 0 && (
-        <TreeList
-          style={{
-            maxHeight: "100%",
-            overflow: "auto",
-            width: "100%",
-          }}
-          // expand field
-          expandField={expandField}
-          // edit field
+      <div>
+        {isLoading && loadingPanel}
+        <ManageFilter newFilter={newFilter} onQuery={onQuery}></ManageFilter>
+        <FilterData options={options} onQuery={onQuery}/>
+        {data.length !== 0 && (
+            <TreeList
+                style={{
+                  maxHeight: "100%",
+                  overflow: "auto",
+                  width: "100%",
+                }}
+                // expand field
+                expandField={expandField}
+                // edit field
           editField={editField}
           //child field
           subItemsField={subItemsField}
