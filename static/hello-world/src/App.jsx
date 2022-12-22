@@ -53,6 +53,8 @@ function App() {
   let [options, setOptions] = useState();
   let [newFilter, setNewFilter] = useState();
   let [dateRange, setDateRange] = useState();
+  let [fixedVersions, setFixexVersions] = useState();
+
   useEffect(() => {}, []);
   const onRowDrop = (event) => {
     const dropItemIndex = [...event.draggedOver];
@@ -382,27 +384,29 @@ function App() {
       cell: CommandCell,
     },
   ];
-  const onQuery = (projects, linkType, issueKey, dateRange) => {
+  const onQuery = (projects, issueLinkType, issueKey, dateRange,fixedVersions) => {
     //valiate
     setIsLoading(true);
     if (projects.length === 0) {
       alert("Please select at leas one project");
       return;
     }
-    if (linkType === "") {
+    if (issueLinkType === "") {
       alert("Please select link type of issue");
       return;
     }
     setProjects(projects);
-    setIssueLinkType(linkType);
+    setIssueLinkType(issueLinkType);
     setDateRange(dateRange);
+    setFixexVersions(fixedVersions)
     setOptions({
       projects: projects,
-      issueLink: linkType,
+      issueLinkType: issueLinkType,
       dateRange: dateRange,
+      fixedVersions:fixedVersions
     });
     // get issue data
-    issueData(projects, linkType, issueKey, dateRange).then((value) => {
+    issueData(projects, issueLinkType, issueKey, dateRange,fixedVersions).then((value) => {
       if (value.error) {
         alert(value.error);
       } else {
@@ -486,9 +490,7 @@ function App() {
               )}
               <SaveFilter
                 onSaveNewFilter={onSaveNewFilter}
-                projects={projects}
-                issueLinkType={issueLinkType}
-                dateRange={dateRange}
+                options={options}
               ></SaveFilter>
             </TreeListToolbar>
           }

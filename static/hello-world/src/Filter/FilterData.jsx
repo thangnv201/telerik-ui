@@ -16,6 +16,7 @@ const FilterData = (props) => {
             setProjects(props.options.projects);
             setIssueLinkType(props.options.issueLink);
             setDateRange(props.options.dateRange);
+            setFixexVersions(props.options.fixedVersions)
         }
     }, [props]);
     const onChangeProject = (value) => {
@@ -34,7 +35,8 @@ const FilterData = (props) => {
         setFixexVersions(value)
     }
     const search = () => {
-        props.onQuery(projects, issueLinkType, issueKey, dateRange);
+        console.log(fixedVersions)
+        props.onQuery(projects, issueLinkType, issueKey, dateRange,fixedVersions);
     };
     return (
         <div>

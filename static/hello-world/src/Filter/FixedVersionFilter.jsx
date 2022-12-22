@@ -4,7 +4,7 @@ import {gerProjectVersions} from "../service";
 
 const FixedVersionFilter = (props) => {
     let [data, setData] = useState([]);
-    let [value, setValue] = useState();
+    let [value, setValue] = useState(props.value);
 
     useEffect(() => {
         (async () => {
@@ -20,6 +20,9 @@ const FixedVersionFilter = (props) => {
             })
         })()
     }, [props.projects])
+    useEffect(()=>{
+        setValue(props.value)
+    },[props.value])
     const filterChange = () => {
         console.log('123')
     }
@@ -34,7 +37,7 @@ const FixedVersionFilter = (props) => {
             width: "300px",
         }}
         onChange={(e) => {
-            // props.onChangeProject(e.target.value);
+            props.onChangeFixedVersion(e.target.value);
             setValue(e.target.value);
         }}
     />

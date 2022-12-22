@@ -11,14 +11,14 @@ const ManageFilter = (props) => {
     useEffect(() => {
         (async () => {
             let data = await querryFilter();
-            console.log(data);
             let flatData = data.map(e => {
                 return {
                     key: e.key,
                     filterName: e.value.filterName,
                     dateRange: e.value.dateRange,
                     issueLinkType: e.value.issueLinkType,
-                    projects: e.value.projects
+                    projects: e.value.projects,
+                    fixedVersions: e.value.fixedVersions
                 }
             })
             setData(flatData)
@@ -36,8 +36,12 @@ const ManageFilter = (props) => {
         setSelectedValue(event.value);
     };
     const query = () => {
-        console.log(selectedValue)
-        props.onQuery(selectedValue.projects, selectedValue.issueLinkType, "", selectedValue.dateRange);
+        props.onQuery(
+            selectedValue.projects,
+            selectedValue.issueLinkType,
+            "",
+            selectedValue.dateRange,
+            selectedValue.fixedVersions);
     }
     return (
         <div>

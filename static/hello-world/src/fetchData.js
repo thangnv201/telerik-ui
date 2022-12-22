@@ -1,12 +1,13 @@
-import {
-    requestJira
-} from "@forge/bridge"
+import {requestJira} from "@forge/bridge"
 
-const data = async (projects, linkType, issueKey, dateRange) => {
+const data = async (projects, linkType, issueKey, dateRange, fixedVersions) => {
     let listProject = projects.map(element => JSON.stringify(element.key))
     let params = issueKey === "" ? `project in (${listProject}) AND (filter != ${linkType.id})` : `project in (${listProject}) AND (filter != ${linkType.id}) AND issue =${issueKey}`;
     if (dateRange) {
         params = params.concat(` AND created >=${formatDate(dateRange.start)} AND created <=${formatDate(dateRange.end)}`);
+    }
+    if (fixedVersions) {
+        params = params.concat(` AND fixVersion in ("${fixedVersions.join("\",\"")}")`)
     }
     const response = await requestJira(`/rest/api/2/search?jql=${params}`);
     console.log(params);
@@ -26,8 +27,8 @@ export const formatDate = (date) => {
 
     return [year, month, day].join('-');
 }
-const issueData = async (projects, linkType, issueKey, dateRange) => {
-    const result = await data(projects, linkType, issueKey, dateRange);
+const issueData = async (projects, issueLinkType, issueKey, dateRange, fixedVersions) => {
+    const result = await data(projects, issueLinkType, issueKey, dateRange, fixedVersions);
     if (result.errorMessages) {
         return {
             error: result.errorMessages
@@ -47,7 +48,7 @@ const issueData = async (projects, linkType, issueKey, dateRange) => {
             issueType: element.fields.issuetype.name
         }
 
-        let children = await findChildByJql(projects, linkType, item);
+        let children = await findChildByJql(projects, issueLinkType, item);
         item.issues = children;
         issues.push(item)
     }))

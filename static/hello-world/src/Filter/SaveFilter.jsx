@@ -18,10 +18,12 @@ const SaveFilter = (props) => {
     }
     let data = {
       filterName: filterName,
-      projects: props.projects,
-      issueLinkType: props.issueLinkType,
-      dateRange: props.dateRange
+      projects: props.options.projects,
+      issueLinkType: props.options.issueLinkType,
+      dateRange: props.options.dateRange,
+      fixedVersions: props.options.fixedVersions
     };
+    console.log(data)
     props.onSaveNewFilter(data)
     saveFilter(data);
     setShow(!show);
