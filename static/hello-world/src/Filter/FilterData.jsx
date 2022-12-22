@@ -14,7 +14,7 @@ const FilterData = (props) => {
     useEffect(() => {
         if (props.options) {
             setProjects(props.options.projects);
-            setIssueLinkType(props.options.issueLink);
+            setIssueLinkType(props.options.issueLinkType);
             setDateRange(props.options.dateRange);
             setFixexVersions(props.options.fixedVersions)
         }

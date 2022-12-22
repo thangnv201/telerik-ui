@@ -43,6 +43,9 @@ const ManageFilter = (props) => {
             selectedValue.dateRange,
             selectedValue.fixedVersions);
     }
+    const share = () => {
+
+    }
     return (
         <div>
             <h2>Manage Filter</h2>
@@ -88,7 +91,7 @@ const ManageFilter = (props) => {
                 fillMode={'solid'}
                 rounded={'medium'}
                 disabled={selectedValue === null}
-                onClick={query}
+                onClick={share}
             >
                 Share
             </Button>
